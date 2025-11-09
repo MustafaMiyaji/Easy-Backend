@@ -1,0 +1,18 @@
+# Exclude development files from Cloud Build
+node_modules/
+.git/
+.vscode/
+.env
+.env.local
+*.local
+*.log
+npm-debug.log*
+yarn-debug.log*
+coverage/
+tests/
+*.test.js
+*.spec.js
+
+# Explicitly INCLUDE the Firebase service account file for Cloud Build
+# (even though it's in .gitignore)
+!*firebase-adminsdk*.json
