@@ -239,7 +239,7 @@ async function requireAdmin(req, res, next) {
 
     // Try JWT first
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, getJwtSecret());
       if (decoded.role === "admin") {
         req.admin = decoded;
         return next();
