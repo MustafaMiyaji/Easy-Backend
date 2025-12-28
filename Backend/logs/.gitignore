@@ -1,0 +1,3 @@
+# Logs - Do not commit log files
+*.log
+!.gitkeep
