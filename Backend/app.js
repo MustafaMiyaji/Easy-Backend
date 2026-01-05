@@ -555,6 +555,11 @@ async function start() {
           }
         });
     startListen();
+  } catch (err) {
+    logger.error("❌ Failed to start cron/backup jobs:", err);
+    // Don't exit - server should still run even if cron fails to init
+  }
+}
 
 // Export app for testing
 module.exports = app;
