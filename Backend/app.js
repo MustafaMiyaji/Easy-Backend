@@ -399,7 +399,7 @@ app.use((err, req, res, next) => {
 
 const uri =
   process.env.DB_CONNECTION_STRING || "mongodb://127.0.0.1:27017/easy_app";
-let port = Number(process.env.PORT || 3000);
+let port = Number(process.env.PORT || 8080);
 
 async function start() {
   try {
