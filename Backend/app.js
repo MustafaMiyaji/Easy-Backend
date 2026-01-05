@@ -405,6 +405,19 @@ async function start() {
   try {
     await mongoose.connect(uri);
     logger.info("✅ Connected to MongoDB");
+  } catch (mongoErr) {
+    logger.warn("⚠️ MongoDB connection failed (will retry):", mongoErr.message);
+    // Don't exit - allow server to start and attempt reconnection
+    // This is important for Cloud Run deployment
+    setTimeout(async () => {
+      try {
+        await mongoose.connect(uri);
+        logger.info("✅ MongoDB connected (retry successful)");
+      } catch (retryErr) {
+        logger.error("❌ MongoDB retry failed:", retryErr.message);
+      }
+    }, 5000);
+  }
 
     // Start cron job for checking order assignment timeouts (runs every 5 minutes)
     // Increased interval to prevent overlapping executions and reduce database load
@@ -538,11 +551,6 @@ async function start() {
           }
         });
     startListen();
-  } catch (err) {
-    logger.error("❌ Failed to start server:", err);
-    process.exit(1);
-  }
-}
 
 // Export app for testing
 module.exports = app;
