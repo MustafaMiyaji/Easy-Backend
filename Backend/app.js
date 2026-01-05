@@ -402,22 +402,26 @@ const uri =
 let port = Number(process.env.PORT || 8080);
 
 async function start() {
+  // Start MongoDB connection in the background (non-blocking)
+  // This allows server to start even if MongoDB is temporarily unavailable
+  const connectMongoDB = async () => {
+    try {
+      await mongoose.connect(uri, { 
+        serverSelectionTimeoutMS: 10000,  // 10 second timeout for server selection
+        connectTimeoutMS: 10000            // 10 second connection timeout
+      });
+      logger.info("✅ Connected to MongoDB");
+    } catch (mongoErr) {
+      logger.warn("⚠️ MongoDB connection failed (will retry):", mongoErr.message);
+      // Retry after 5 seconds
+      setTimeout(connectMongoDB, 5000);
+    }
+  };
+  
+  // Start connection attempt without waiting (non-blocking)
+  connectMongoDB().catch(err => logger.error("MongoDB background connection error:", err));
+
   try {
-    await mongoose.connect(uri);
-    logger.info("✅ Connected to MongoDB");
-  } catch (mongoErr) {
-    logger.warn("⚠️ MongoDB connection failed (will retry):", mongoErr.message);
-    // Don't exit - allow server to start and attempt reconnection
-    // This is important for Cloud Run deployment
-    setTimeout(async () => {
-      try {
-        await mongoose.connect(uri);
-        logger.info("✅ MongoDB connected (retry successful)");
-      } catch (retryErr) {
-        logger.error("❌ MongoDB retry failed:", retryErr.message);
-      }
-    }, 5000);
-  }
 
     // Start cron job for checking order assignment timeouts (runs every 5 minutes)
     // Increased interval to prevent overlapping executions and reduce database load
