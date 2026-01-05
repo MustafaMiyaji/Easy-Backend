@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/workspaces/Easy-Backend/Backend/logs/.a17f2065bd75f44f53e78b15bd50a34143530f5e-audit.json",
+    "files": [
+        {
+            "date": 1767613231853,
+            "name": "/workspaces/Easy-Backend/Backend/logs/combined-2026-01-05.log",
+            "hash": "9bd4b07513538a7f0d4578939097533d8db39a636a38836d30bb022d2b572d86"
+        }
+    ],
+    "hashType": "sha256"
+}

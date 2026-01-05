@@ -35,5 +35,5 @@ RUN chmod +x scripts/*.sh 2>/dev/null || true && \
 ENV PORT=8080
 EXPOSE 8080
 
-# Start the server
-CMD ["npm", "start"]
+# Start the server with PORT explicitly set
+CMD ["sh", "-c", "PORT=${PORT:-8080} npm start"]
