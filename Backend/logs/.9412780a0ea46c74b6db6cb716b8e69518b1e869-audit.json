@@ -6,14 +6,14 @@
     "auditLog": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\.9412780a0ea46c74b6db6cb716b8e69518b1e869-audit.json",
     "files": [
         {
-            "date": 1766133628202,
-            "name": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\combined-2025-12-19.log",
-            "hash": "66fd65d6235347df04a15b961d8a4821ae8e98f3fb4923c1606c5b767a563e37"
-        },
-        {
             "date": 1766399322334,
             "name": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\combined-2025-12-22.log",
             "hash": "e071016164b9ee6484fe019bd31177be1d6e55c946ba0306fd6494dee0e2fbe8"
+        },
+        {
+            "date": 1767605470224,
+            "name": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\combined-2026-01-05.log",
+            "hash": "8ded30a33fd570af3657355e617bd597eff134203f3ee7c0c64df5320c16c893"
         }
     ],
     "hashType": "sha256"

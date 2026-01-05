@@ -110,7 +110,7 @@ app.use(
 const isDevelopment = process.env.NODE_ENV !== "production";
 const globalLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute window (shorter window, easier to recover)
-  max: isDevelopment ? 200 : 60, // Dev: 200/min, Prod: 60/min
+  max: isDevelopment ? 500 : 300, // Dev: 500/min, Prod: 300/min (normal users won't hit this)
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
@@ -123,10 +123,10 @@ const globalLimiter = rateLimit({
 });
 app.use("/api/", globalLimiter);
 
-// 4. Stricter Rate Limiting for Auth Endpoints (5 attempts per 15 minutes)
+// 4. Auth Rate Limiting (20 failed attempts per 15 minutes)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === "test" ? 1000 : 5, // Allow more in tests
+  max: process.env.NODE_ENV === "test" ? 1000 : 20, // Increased from 5 to 20 for normal users
   skipSuccessfulRequests: true, // Only count failed attempts
   message: "Too many login attempts, please try again later.",
   validate: { trustProxy: false }, // Disable the validation warning
@@ -163,9 +163,11 @@ try {
       try {
         // First try to treat it as JSON string (Cloud Run secret injection)
         const credsStr = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-        if (credsStr.startsWith('{')) {
+        if (credsStr.startsWith("{")) {
           credentials = JSON.parse(credsStr);
-          logger.debug("Parsed GOOGLE_APPLICATION_CREDENTIALS from JSON string");
+          logger.debug(
+            "Parsed GOOGLE_APPLICATION_CREDENTIALS from JSON string"
+          );
         } else {
           // If not JSON, try to require it as a file path
           credentials = require(credsStr);
@@ -479,7 +481,7 @@ async function start() {
     // ========================================
     // AUTOMATED DATABASE BACKUP (Daily at 2 AM)
     // ========================================
-    const { createBackup } = require("./scripts/backup-db-gcs");
+    const { createBackup } = require("./scripts/backup-db");
 
     cron.schedule("0 2 * * *", async () => {
       try {
@@ -487,14 +489,18 @@ async function start() {
         const result = await createBackup();
         logger.info(`✅ Automated backup completed: ${result.backupName}`);
         if (result.gcs) {
-          logger.info(`📤 Backup uploaded to GCS: ${result.gcs.uploadCount} files`);
+          logger.info(
+            `📤 Backup uploaded to GCS: ${result.gcs.uploadCount} files`
+          );
         }
       } catch (error) {
         logger.error("❌ Automated backup failed:", error.message);
         // Send alert notification here if needed (email/SMS)
       }
     });
-    logger.info("🗄️  Automated backup scheduled: Daily at 2:00 AM (uploads to GCS)");
+    logger.info(
+      "🗄️  Automated backup scheduled: Daily at 2:00 AM (uploads to GCS)"
+    );
 
     const startListen = () =>
       app

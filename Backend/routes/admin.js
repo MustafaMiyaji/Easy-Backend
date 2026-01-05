@@ -48,7 +48,7 @@ const {
 // Rate limiting for admin routes
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === "test" ? 10000 : 100, // Higher limit for tests
+  max: process.env.NODE_ENV === "test" ? 10000 : 500, // Increased from 100 to 500 for admin operations
   message: { error: "Too many admin requests, please try again later" },
   standardHeaders: true,
   legacyHeaders: false,
@@ -2682,137 +2682,6 @@ router.get("/coupons/:code/usage", requireAdmin, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch coupon usage",
-      error: error.message,
-    });
-  }
-});
-
-// ---------------- BACKUP MANAGEMENT ----------------
-// Trigger manual backup to GCS
-router.post("/backup-now", requireAdmin, async (req, res) => {
-  try {
-    const { createBackup } = require("../scripts/backup-db-gcs");
-    
-    // Run backup asynchronously
-    const result = await createBackup();
-    
-    res.json({
-      success: true,
-      message: "Backup completed successfully",
-      backup: {
-        name: result.backupName,
-        size: result.size,
-        localPath: result.localPath,
-        gcs: result.gcs ? {
-          path: `gs://easy-grocery-backups/${result.gcs.gcsPath}`,
-          files: result.gcs.uploadCount,
-        } : null,
-      },
-    });
-  } catch (error) {
-    console.error("Backup error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Backup failed",
-      error: error.message,
-    });
-  }
-});
-
-// List all backups in GCS
-router.get("/backups", requireAdmin, async (req, res) => {
-  try {
-    const { Storage } = require("@google-cloud/storage");
-    const storage = new Storage({
-      projectId: process.env.GCP_PROJECT_ID || "easy-grocery-521d5",
-    });
-    const bucket = storage.bucket("easy-grocery-backups");
-
-    const [files] = await bucket.getFiles({ prefix: 'backups/' });
-
-    if (files.length === 0) {
-      return res.json({ success: true, backups: [] });
-    }
-
-    // Group files by backup
-    const backups = {};
-    files.forEach(file => {
-      const match = file.name.match(/^backups\/([^\/]+)\//);
-      if (match) {
-        const backupName = match[1];
-        if (!backups[backupName]) {
-          backups[backupName] = {
-            name: backupName,
-            files: [],
-            created: file.metadata.timeCreated,
-            size: 0,
-          };
-        }
-        backups[backupName].files.push({
-          name: file.name,
-          size: parseInt(file.metadata.size || 0),
-        });
-        backups[backupName].size += parseInt(file.metadata.size || 0);
-      }
-    });
-
-    const backupList = Object.values(backups)
-      .sort((a, b) => new Date(b.created) - new Date(a.created))
-      .map(backup => ({
-        name: backup.name,
-        created: backup.created,
-        fileCount: backup.files.length,
-        size: backup.size,
-        gcsPath: `gs://easy-grocery-backups/backups/${backup.name}/`,
-      }));
-
-    res.json({
-      success: true,
-      backups: backupList,
-      total: backupList.length,
-    });
-  } catch (error) {
-    console.error("Error listing backups:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to list backups",
-      error: error.message,
-    });
-  }
-});
-
-// Delete a specific backup from GCS
-router.delete("/backups/:backupName", requireAdmin, async (req, res) => {
-  try {
-    const { backupName } = req.params;
-    const { Storage } = require("@google-cloud/storage");
-    const storage = new Storage({
-      projectId: process.env.GCP_PROJECT_ID || "easy-grocery-521d5",
-    });
-    const bucket = storage.bucket("easy-grocery-backups");
-
-    // Delete all files in this backup
-    const [files] = await bucket.getFiles({ prefix: `backups/${backupName}/` });
-    
-    if (files.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Backup not found",
-      });
-    }
-
-    await Promise.all(files.map(file => file.delete()));
-
-    res.json({
-      success: true,
-      message: `Deleted backup: ${backupName}`,
-      deletedFiles: files.length,
-    });
-  } catch (error) {
-    console.error("Error deleting backup:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete backup",
       error: error.message,
     });
   }

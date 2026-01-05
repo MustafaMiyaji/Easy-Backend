@@ -29,26 +29,14 @@ const DB_URI =
   process.env.DB_CONNECTION_STRING || "mongodb://127.0.0.1:27017/easy_app";
 const RETENTION_DAYS = 7; // Keep backups for 7 days
 const MAX_BACKUPS = 14; // Maximum number of backups to keep
-const MAX_RETRIES = parseInt(process.env.BACKUP_MAX_RETRIES || "3", 10);
-const RETRY_BASE_DELAY_MS = 3000;
-
-// Conservative mongodump options to reduce connection load on Atlas
-const MONGODUMP_OPTS = [
-  "--readPreference=secondaryPreferred",
-  "--numParallelCollections=1",
-  "--gzip",
-  "--ssl",
-  "--quiet",
-];
 
 // Parse database name from connection string
 function getDatabaseName(uri) {
-  const match = uri.match(/\/([^\/?]+)(\?|$)/);
-  return match ? match[1] : null;
+  const match = uri.match(/\/([^\/\?]+)(\?|$)/);
+  return match ? match[1] : "easy_app";
 }
 
-// Prefer explicit DB_NAME env; fallback to parse from URI; leave undefined if absent
-const DB_NAME = process.env.DB_NAME || getDatabaseName(DB_URI) || null;
+const DB_NAME = getDatabaseName(DB_URI);
 
 // Ensure backup directory exists
 function ensureBackupDir() {
@@ -66,8 +54,7 @@ function generateBackupName() {
     .replace(/:/g, "-")
     .replace(/\..+/, "")
     .replace("T", "_");
-  const namePart = DB_NAME || "database";
-  return `backup_${namePart}_${timestamp}`;
+  return `backup_${DB_NAME}_${timestamp}`;
 }
 
 // Check if mongodump is installed
@@ -80,82 +67,17 @@ async function checkMongoDumpInstalled() {
   }
 }
 
-// Execute shell command with promise and timeout
-function execCommand(command, timeoutMs = 600000) {
+// Execute shell command with promise
+function execCommand(command) {
   return new Promise((resolve, reject) => {
-    const child = exec(command, { shell: '/bin/bash', timeout: timeoutMs }, (error, stdout, stderr) => {
+    exec(command, (error, stdout, stderr) => {
       if (error) {
-        const fullError = new Error(`${error.message}\n${stderr || ''}`);
-        fullError.stderr = stderr;
-        fullError.code = error.code;
-        reject(fullError);
+        reject(error);
         return;
       }
       resolve({ stdout, stderr });
     });
-    // Also log any real-time output for debugging
-    if (child.stdout) {
-      child.stdout.on('data', (data) => {
-        if (process.env.DEBUG_BACKUP) {
-          logger.debug(`mongodump output: ${data}`);
-        }
-      });
-    }
-    if (child.stderr) {
-      child.stderr.on('data', (data) => {
-        logger.warn(`mongodump stderr: ${data}`);
-      });
-    }
   });
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// Append connection options to URI for timeouts/selection
-function withExtraUriOptions(uri) {
-  const extra = "connectTimeoutMS=20000&socketTimeoutMS=600000&serverSelectionTimeoutMS=20000";
-  return uri.includes("?") ? `${uri}&${extra}` : `${uri}?${extra}`;
-}
-
-// Build mongodump command string with tuned options
-// NOTE: NOT using --db to dump all databases (safer full backup for restoration)
-function buildDumpCommand(backupPath) {
-  const dumpUri = withExtraUriOptions(DB_URI);
-  const escapedUri = dumpUri.replace(/"/g, '\\"');
-  const escapedOut = backupPath.replace(/"/g, '\\"');
-  const args = [
-    "mongodump",
-    `--uri="${escapedUri}"`,
-    `--out="${escapedOut}"`,
-    ...MONGODUMP_OPTS,
-  ];
-  return args.join(" ");
-}
-
-// Run mongodump with retry/backoff to handle transient Atlas handshake errors
-async function runDumpWithRetries(command) {
-  logger.debug(`Executing mongodump: ${command}`);
-  let lastError;
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      logger.info(`Backup attempt ${attempt}/${MAX_RETRIES}`);
-      await execCommand(command);
-      logger.info("✅ mongodump completed successfully");
-      return;
-    } catch (error) {
-      lastError = error;
-      const delay = RETRY_BASE_DELAY_MS * attempt;
-      logger.warn(
-        `Backup attempt ${attempt} failed: ${error.message || "unknown"}${
-          error.stderr ? ` | stderr: ${error.stderr}` : ""
-        }. Retrying in ${delay}ms...`
-      );
-      await sleep(delay);
-    }
-  }
-  throw lastError;
 }
 
 // Create database backup
@@ -203,19 +125,14 @@ You can still backup manually using MongoDB Compass or Atlas.
     logger.info(`Database: ${DB_NAME}`);
     logger.info(`Backup location: ${backupPath}`);
 
-  // Build mongodump command with conservative options
-  const command = buildDumpCommand(backupPath);
+    // Build mongodump command
+    const command = `mongodump --uri="${DB_URI}" --out="${backupPath}"`;
 
-  // Execute backup with retries for transient connection issues
-  await runDumpWithRetries(command);
+    // Execute backup
+    const result = await execCommand(command);
 
-    // Check if backup was successful - mongodump creates subdirectories for each database
-    // So check if output directory exists AND has content (at least one subdirectory)
-    const backupSuccess =
-      fs.existsSync(backupPath) &&
-      fs.readdirSync(backupPath).length > 0;
-
-    if (backupSuccess) {
+    // Check if backup was successful
+    if (fs.existsSync(backupPath)) {
       const backupSize = getDirectorySize(backupPath);
       logger.info(`✅ Backup completed successfully`);
       logger.info(`   Backup name: ${backupName}`);
@@ -226,7 +143,7 @@ You can still backup manually using MongoDB Compass or Atlas.
 
       return backupName;
     } else {
-      throw new Error("Backup directory was not created or is empty");
+      throw new Error("Backup directory was not created");
     }
   } catch (error) {
     logger.error(`❌ Backup failed: ${error.message}`);
@@ -275,30 +192,10 @@ async function cleanupOldBackups() {
       .map((name) => {
         const backupPath = path.join(BACKUP_DIR, name);
         const stats = fs.statSync(backupPath);
-
-        // Prefer parsing the timestamp from the folder name (more reliable than birthtime)
-        let created = stats.mtime || stats.birthtime || new Date();
-        try {
-          const match = name.match(/(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/);
-          if (match) {
-            const [, year, month, day, hour, minute, second] = match;
-            created = new Date(
-              parseInt(year, 10),
-              parseInt(month, 10) - 1,
-              parseInt(day, 10),
-              parseInt(hour, 10),
-              parseInt(minute, 10),
-              parseInt(second, 10)
-            );
-          }
-        } catch (err) {
-          // Fallback already set above
-        }
-
         return {
           name,
           path: backupPath,
-          created,
+          created: stats.birthtime,
           size: getDirectorySize(backupPath),
         };
       })
