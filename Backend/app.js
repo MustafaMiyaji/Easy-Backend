@@ -333,7 +333,8 @@ app.get("/api/app-version", (req, res) => {
 app.post("/api/admin/backup-now", async (req, res) => {
   try {
     logger.info("📦 Manual backup triggered via API");
-    const { createBackup } = require("./scripts/backup-db");
+    // Use GCS-enabled backup script so daily backups are uploaded to Cloud Storage
+    const { createBackup } = require("./scripts/backup-db-gcs");
     const backupName = await createBackup();
     res.json({
       success: true,
