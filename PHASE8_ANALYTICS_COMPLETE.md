@@ -14,24 +14,26 @@ Comprehensive testing of admin analytics and reporting endpoints that power the 
 
 ## Test Summary
 
-| Metric | Value |
-|--------|-------|
-| **Total Tests** | 14 |
-| **Passing** | 14 (100%) |
-| **Test File** | `tests/admin_phase8_analytics.test.js` |
-| **Lines of Code** | ~584 lines |
-| **Time to Complete** | ~2 hours |
+| Metric               | Value                                  |
+| -------------------- | -------------------------------------- |
+| **Total Tests**      | 14                                     |
+| **Passing**          | 14 (100%)                              |
+| **Test File**        | `tests/admin_phase8_analytics.test.js` |
+| **Lines of Code**    | ~584 lines                             |
+| **Time to Complete** | ~2 hours                               |
 
 ---
 
 ## Endpoints Tested
 
 ### 1. Revenue Reporting Overview
+
 **Endpoint**: `GET /api/admin/reporting/overview`  
 **Tests**: 7  
 **Lines Covered**: 314-425 in admin.js
 
 #### Response Structure
+
 ```javascript
 {
   range: { from: Date, to: Date },
@@ -50,6 +52,7 @@ Comprehensive testing of admin analytics and reporting endpoints that power the 
 ```
 
 #### Key Features Tested
+
 - ✅ MongoDB **$facet pipeline** with 3 branches:
   - `core`: totalRevenue, orderCount, avgValue
   - `daily`: Daily aggregation by year/month/day
@@ -63,6 +66,7 @@ Comprehensive testing of admin analytics and reporting endpoints that power the 
 - ✅ Admin authentication requirement
 
 #### Test Scenarios
+
 1. **Revenue overview with metrics and trends** - Full pipeline with multiple orders
 2. **Date range filtering** - Custom from/to dates
 3. **Exclude cancelled orders** - Only delivered/completed orders counted
@@ -74,11 +78,13 @@ Comprehensive testing of admin analytics and reporting endpoints that power the 
 ---
 
 ### 2. Platform Metrics Dashboard
+
 **Endpoint**: `GET /api/admin/metrics`  
 **Tests**: 7  
 **Lines Covered**: 2160-2270 in admin.js
 
 #### Response Structure
+
 ```javascript
 {
   orders: Number,                     // Total orders count
@@ -95,6 +101,7 @@ Comprehensive testing of admin analytics and reporting endpoints that power the 
 ```
 
 #### Key Features Tested
+
 - ✅ **9 parallel aggregations** with Promise.all for performance
 - ✅ Client/seller/restaurant distinction with email/phone deduplication
 - ✅ Restaurant identification (case-insensitive `/rest/i` on business_type)
@@ -105,6 +112,7 @@ Comprehensive testing of admin analytics and reporting endpoints that power the 
 - ✅ Admin authentication requirement
 
 #### Test Scenarios
+
 1. **Comprehensive platform metrics** - Full dashboard with all metrics
 2. **Client/seller distinction** - Excludes clients who are also sellers
 3. **Restaurant counting** - Separate from general sellers
@@ -118,13 +126,14 @@ Comprehensive testing of admin analytics and reporting endpoints that power the 
 ## Technical Implementation
 
 ### Helper Functions
+
 ```javascript
 const createTestOrder = async (data) => {
   return Order.create({
     client_id: data.client_id || "test_client",
     status: data.status || "delivered",
     order_items: data.order_items || [
-      { product_id: data.product_id, qty: 1, price_snapshot: data.amount }
+      { product_id: data.product_id, qty: 1, price_snapshot: data.amount },
     ],
     delivery: { delivery_status: "delivered" },
     payment: { amount: data.amount, method: "UPI", status: "paid" },
@@ -134,6 +143,7 @@ const createTestOrder = async (data) => {
 ```
 
 ### Admin Authentication Pattern
+
 ```javascript
 beforeAll(async () => {
   await connectTestDB();
@@ -167,6 +177,7 @@ beforeEach(async () => {
 ## Dependencies & Models
 
 ### Collections Used
+
 - **Order** - Revenue, order counts, discounts
 - **Product** - Active products, product names for enrichment
 - **Client** - Client counting, email/phone deduplication
@@ -177,21 +188,41 @@ beforeEach(async () => {
 - **PlatformSettings** - Commission rates
 
 ### Key Aggregation Patterns
+
 1. **$facet Pipeline** (reporting/overview):
+
    ```javascript
    Order.aggregate([
      { $match: { status: { $ne: "cancelled" } } },
      {
        $facet: {
-         core: [{ $group: { _id: null, totalRevenue: { $sum: "$payment.amount" } } }],
-         daily: [{ $group: { _id: { date: "$created_at" }, revenue: { $sum: "$payment.amount" } } }],
-         topProducts: [{ $unwind: "$order_items" }, { $group: { _id: "$order_items.product_id", revenue: { $sum: "$order_items.price_snapshot" } } }]
-       }
-     }
-   ])
+         core: [
+           { $group: { _id: null, totalRevenue: { $sum: "$payment.amount" } } },
+         ],
+         daily: [
+           {
+             $group: {
+               _id: { date: "$created_at" },
+               revenue: { $sum: "$payment.amount" },
+             },
+           },
+         ],
+         topProducts: [
+           { $unwind: "$order_items" },
+           {
+             $group: {
+               _id: "$order_items.product_id",
+               revenue: { $sum: "$order_items.price_snapshot" },
+             },
+           },
+         ],
+       },
+     },
+   ]);
    ```
 
 2. **Promise.all Performance** (metrics):
+
    ```javascript
    const [orderCount, productCount, clients, sellers, agents, ...] = await Promise.all([
      Order.estimatedDocumentCount(),
@@ -205,10 +236,11 @@ beforeEach(async () => {
 
 3. **Set-based Deduplication** (metrics):
    ```javascript
-   const sellerEmails = new Set(sellers.map(s => s.email?.toLowerCase()));
-   const sellerPhones = new Set(sellers.map(s => s.phone));
+   const sellerEmails = new Set(sellers.map((s) => s.email?.toLowerCase()));
+   const sellerPhones = new Set(sellers.map((s) => s.phone));
    const pureClients = clients.filter(
-     c => !sellerEmails.has(c.email?.toLowerCase()) && !sellerPhones.has(c.phone)
+     (c) =>
+       !sellerEmails.has(c.email?.toLowerCase()) && !sellerPhones.has(c.phone)
    );
    ```
 
@@ -227,11 +259,13 @@ During testing, corrected 3 model validation errors:
 ## Coverage Impact
 
 ### Admin.js Coverage
+
 - **Before Phase 8**: ~14% baseline
 - **After Phase 8**: **26.11%** (+~12% total)
 - **Section 4 Contribution**: +~3-4% (analytics endpoints)
 
 ### Lines Covered by Section 4
+
 - **Lines 314-425**: GET /reporting/overview (112 lines)
 - **Lines 2160-2270**: GET /metrics (110 lines)
 - **Total**: ~222 lines of complex aggregation logic
@@ -254,6 +288,7 @@ During testing, corrected 3 model validation errors:
 ✅ **Phase 8 Complete!** All 4 sections done (78 tests total)
 
 ### Continue to:
+
 - **Option A**: Complete remaining routes to 85% overall coverage
 - **Option B**: Integration testing (end-to-end workflows)
 - **Option C**: Production deployment preparation

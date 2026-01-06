@@ -28,7 +28,9 @@ describe("PHASE 8: Fraud Detection & Alerts", () => {
     return Order.create({
       client_id: data.client_id,
       status: data.status || "delivered",
-      order_items: data.order_items || [{ qty: 1, price_snapshot: data.payment.amount }],
+      order_items: data.order_items || [
+        { qty: 1, price_snapshot: data.payment.amount },
+      ],
       delivery: data.delivery || {
         delivery_status: data.status === "refunded" ? "cancelled" : "delivered",
         delivery_address: { full_address: "Test St" },

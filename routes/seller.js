@@ -17,6 +17,7 @@ const {
 const { notifyOrderUpdate } = require("../services/push");
 const { buildSnapshot } = require("../controllers/ordersController");
 const mongoose = require("mongoose");
+const sellerEvents = require("../services/sellerEvents");
 
 // Haversine distance calculation (in kilometers)
 function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -45,10 +46,71 @@ router.post("/toggle-open", requireSeller, async (req, res) => {
       { new: true, projection: { business_name: 1, is_open: 1 } }
     );
     if (!updated) return res.status(404).json({ error: "seller not found" });
+
+    // Broadcast status change to all connected clients
+    sellerEvents.broadcastSellerStatus(req.sellerId, updated.is_open);
+
     res.json({ success: true, is_open: updated.is_open });
   } catch (e) {
     console.error("toggle-open error", e);
     res.status(500).json({ error: "failed to update open state" });
+  }
+});
+
+// GET /api/seller/:sellerId/status - Get seller/restaurant open/closed status (public)
+router.get("/:sellerId/status", async (req, res) => {
+  try {
+    const { sellerId } = req.params;
+    if (!sellerId || !mongoose.isValidObjectId(sellerId)) {
+      return res.status(400).json({ error: "valid sellerId required" });
+    }
+
+    const seller = await Seller.findById(sellerId)
+      .select("business_name is_open approved")
+      .lean();
+
+    if (!seller) {
+      return res.status(404).json({ error: "seller not found" });
+    }
+
+    res.json({
+      seller_id: sellerId,
+      business_name: seller.business_name,
+      is_open: typeof seller.is_open === "boolean" ? seller.is_open : true,
+      approved: seller.approved || false,
+    });
+  } catch (e) {
+    console.error("seller status error", e);
+    res.status(500).json({ error: "failed to fetch seller status" });
+  }
+});
+
+// SSE endpoint for real-time seller status updates (public - no auth required)
+// Clients connect here to receive instant notifications when sellers open/close
+router.get("/status-stream", (req, res) => {
+  try {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.flushHeaders?.();
+
+    // Send initial connection confirmation
+    res.write(": connected\n\n");
+
+    // Add client to broadcast list
+    sellerEvents.addClient(res);
+
+    console.log(
+      `[SSE] Client connected to seller status stream. Total clients: ${
+        sellerEvents.getStats().connectedClients
+      }`
+    );
+  } catch (e) {
+    console.error("Seller status stream error:", e);
+    try {
+      res.status(500).end();
+    } catch (_) {}
   }
 });
 

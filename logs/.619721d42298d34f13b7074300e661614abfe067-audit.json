@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/workspaces/Easy-Backend/Backend/logs/.619721d42298d34f13b7074300e661614abfe067-audit.json",
+    "files": [
+        {
+            "date": 1767613231854,
+            "name": "/workspaces/Easy-Backend/Backend/logs/exceptions-2026-01-05.log",
+            "hash": "8180004a662d438e66f2c6f46b98c1232e3e93ae79d0af90721ce746ff8108a7"
+        },
+        {
+            "date": 1767722608016,
+            "name": "/workspaces/Easy-Backend/Backend/logs/exceptions-2026-01-06.log",
+            "hash": "b2b54791b809eeded995e855ae42678fa84c75eeb4444f70c69df2f7fe34734e"
+        }
+    ],
+    "hashType": "sha256"
+}

@@ -200,9 +200,11 @@ router.post("/:orderId/cancel", async (req, res) => {
     const savedOrder = await order.save();
 
     // If order had a delivery agent assigned, free them up
-    if (order.delivery_agent_id) {
+    if (order.delivery?.delivery_agent_id) {
       const { DeliveryAgent } = require("../models/models");
-      const agent = await DeliveryAgent.findById(order.delivery_agent_id);
+      const agent = await DeliveryAgent.findById(
+        order.delivery.delivery_agent_id
+      );
       if (agent) {
         agent.available = true;
         agent.assigned_orders = Math.max(0, (agent.assigned_orders || 1) - 1);

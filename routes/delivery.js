@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const {
   Order,
   DeliveryAgent,
@@ -17,6 +18,28 @@ const { buildSnapshot } = require("../controllers/ordersController");
 const _routeCache = new Map();
 const ROUTE_CACHE_TTL_MS = 60 * 1000; // 60s
 const router = express.Router();
+
+// Admin authentication middleware
+function requireAdmin(req, res, next) {
+  try {
+    const auth = req.headers.authorization || req.headers.Authorization;
+    if (!auth || !/^Bearer /i.test(auth)) {
+      return res.status(401).json({ error: "Admin authentication required" });
+    }
+
+    const token = auth.split(/\s+/)[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    req.admin = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid or expired admin token" });
+  }
+}
 
 // Haversine distance calculation (in kilometers)
 function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -977,9 +1000,10 @@ router.post("/accept-order", async (req, res) => {
         location: pickupLocation,
       };
     } else {
-      console.warn(
-        `⚠️ Could not set pickup_address.location for order ${order._id}`
-      );
+      // Pickup location not available - may be set later
+      // console.warn(
+      //   `⚠️ Could not set pickup_address.location for order ${order._id}`
+      // );
     }
 
     // Update order with delivery agent assignment
@@ -1208,6 +1232,192 @@ router.post("/reject-order", async (req, res) => {
   } catch (error) {
     console.error("Error rejecting order:", error);
     res.status(500).json({ error: "Failed to reject order" });
+  }
+});
+
+// Admin force reassign order (for timeout or manual intervention)
+router.post("/force-reassign/:orderId", requireAdmin, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId).lean();
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const currentAgentId = order.delivery?.delivery_agent_id;
+    const triedAgentIds = new Set(
+      (order?.delivery?.assignment_history || []).map((h) => String(h.agent_id))
+    );
+    if (currentAgentId) {
+      triedAgentIds.add(String(currentAgentId));
+    }
+
+    // Get store location for distance calculation
+    let storeLat, storeLng;
+    const itemProductIds = (order.order_items || [])
+      .map((i) => i && i.product_id)
+      .filter(Boolean);
+    if (itemProductIds.length) {
+      const firstProduct = await Product.findById(itemProductIds[0]).populate(
+        "seller_id"
+      );
+      if (
+        firstProduct?.seller_id?.location?.lat &&
+        firstProduct?.seller_id?.location?.lng
+      ) {
+        storeLat = firstProduct.seller_id.location.lat;
+        storeLng = firstProduct.seller_id.location.lng;
+      }
+    }
+
+    // Fallback to pickup_address or delivery address
+    if (!storeLat || !storeLng) {
+      storeLat =
+        order.pickup_address?.location?.lat ||
+        order.delivery?.delivery_address?.location?.lat;
+      storeLng =
+        order.pickup_address?.location?.lng ||
+        order.delivery?.delivery_address?.location?.lng;
+    }
+
+    // Find all available agents who haven't been tried yet
+    const availableAgents = await DeliveryAgent.find({
+      approved: true,
+      active: true,
+      available: true,
+      _id: { $nin: Array.from(triedAgentIds) },
+    }).lean();
+
+    let nextAgent = null;
+    if (availableAgents.length > 0 && storeLat && storeLng) {
+      // Calculate distance for each agent and select nearest
+      const agentsWithDistance = availableAgents
+        .filter(
+          (agent) => agent.current_location?.lat && agent.current_location?.lng
+        )
+        .map((agent) => ({
+          agent,
+          distance: calculateDistance(
+            storeLat,
+            storeLng,
+            agent.current_location.lat,
+            agent.current_location.lng
+          ),
+        }))
+        .sort((a, b) => a.distance - b.distance);
+
+      if (agentsWithDistance.length > 0) {
+        nextAgent = agentsWithDistance[0].agent;
+        console.log(
+          `Order ${orderId} force-reassigned to nearest agent ${
+            nextAgent.name
+          } (${agentsWithDistance[0].distance.toFixed(2)} km away)`
+        );
+      } else {
+        // Fallback: if no agents have location, use least assigned
+        nextAgent = availableAgents.sort(
+          (a, b) => a.assigned_orders - b.assigned_orders
+        )[0];
+        console.log(
+          `Order ${orderId} force-reassigned to agent ${nextAgent.name} (least assigned, no location data)`
+        );
+      }
+    } else if (availableAgents.length > 0) {
+      // No store location, fallback to least assigned
+      nextAgent = availableAgents.sort(
+        (a, b) => a.assigned_orders - b.assigned_orders
+      )[0];
+      console.log(
+        `Order ${orderId} force-reassigned to agent ${nextAgent.name} (least assigned, no store location)`
+      );
+    }
+
+    let updatedOrder = null;
+    if (nextAgent) {
+      // Assign to next agent
+      updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        {
+          $set: {
+            "delivery.delivery_agent_id": nextAgent._id,
+            "delivery.delivery_agent_response": "pending",
+            "delivery.delivery_status": "assigned",
+          },
+          $push: {
+            "delivery.assignment_history": {
+              agent_id: nextAgent._id,
+              assigned_at: new Date(),
+              response: "pending",
+            },
+          },
+        },
+        { new: true }
+      );
+
+      // Increment agent assigned_orders counter
+      await DeliveryAgent.findByIdAndUpdate(nextAgent._id, {
+        $inc: { assigned_orders: 1 },
+      });
+
+      // Decrement previous agent's counter if exists (but don't go below 0)
+      if (currentAgentId) {
+        const currentAgent = await DeliveryAgent.findById(currentAgentId);
+        if (currentAgent && currentAgent.assigned_orders > 0) {
+          await DeliveryAgent.findByIdAndUpdate(currentAgentId, {
+            $inc: { assigned_orders: -1 },
+          });
+        }
+      }
+    } else {
+      // No agent available -> reset assignment
+      updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        {
+          $set: {
+            "delivery.delivery_agent_id": null,
+            "delivery.delivery_agent_response": "pending",
+            "delivery.delivery_status": "pending",
+          },
+        },
+        { new: true }
+      );
+
+      // Decrement previous agent's counter if exists (but don't go below 0)
+      if (currentAgentId) {
+        const currentAgent = await DeliveryAgent.findById(currentAgentId);
+        if (currentAgent && currentAgent.assigned_orders > 0) {
+          await DeliveryAgent.findByIdAndUpdate(currentAgentId, {
+            $inc: { assigned_orders: -1 },
+          });
+        }
+      }
+    }
+
+    // Publish SSE
+    try {
+      const {
+        buildEnrichedSnapshot,
+      } = require("../controllers/ordersController");
+      const snapshot = await buildEnrichedSnapshot(updatedOrder);
+      publish(String(updatedOrder._id), snapshot);
+      if (snapshot.seller_id)
+        publishToSeller(String(snapshot.seller_id), snapshot);
+      await notifyOrderUpdate(
+        updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder,
+        snapshot
+      );
+    } catch (_) {}
+
+    res.json({
+      message: nextAgent
+        ? "Order force-reassigned to next agent"
+        : "Order force-reassigned, no agents available (reset to pending)",
+      agent: nextAgent ? { id: nextAgent._id, name: nextAgent.name } : null,
+    });
+  } catch (error) {
+    console.error("Error force-reassigning order:", error);
+    res.status(500).json({ error: "Failed to force-reassign order" });
   }
 });
 
@@ -1458,10 +1668,58 @@ router.post("/verify-otp", async (req, res) => {
         { excludeRoles: ["agent", "delivery", "delivery_agent", "seller"] }
       );
     } catch (_) {}
-    res.json({ ok: true });
+    res.json({ ok: true, message: "OTP verified successfully" });
   } catch (error) {
     console.error("Error verifying OTP:", error);
     res.status(500).json({ error: "Failed to verify OTP" });
+  }
+});
+
+// Mark order as delivered (for delivery agent)
+router.put("/mark-delivered/:orderId", async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Update order status and delivery status
+    order.status = "delivered";
+    order.delivery = order.delivery || {};
+    order.delivery.delivery_status = "delivered";
+    order.delivery.delivered_at = new Date();
+    order.delivery.delivery_end_time = new Date();
+
+    await order.save();
+
+    // Publish SSE updates
+    try {
+      const {
+        buildEnrichedSnapshot,
+      } = require("../controllers/ordersController");
+      const snapshot = await buildEnrichedSnapshot(order);
+      publish(String(order._id), snapshot);
+      if (snapshot.seller_id) {
+        publishToSeller(String(snapshot.seller_id), snapshot);
+      }
+      await notifyOrderUpdate(
+        order.toObject ? order.toObject() : order,
+        snapshot,
+        { excludeRoles: [] }
+      );
+    } catch (error) {
+      console.log("SSE publish error (non-blocking):", error.message);
+    }
+
+    res.status(200).json({
+      message: "Order marked as delivered successfully",
+      order: order,
+    });
+  } catch (error) {
+    console.error("Error marking order as delivered:", error);
+    res.status(500).json({ error: "Failed to mark order as delivered" });
   }
 });
 
@@ -2025,10 +2283,9 @@ router.post("/:agentId/route/optimize", async (req, res) => {
       // Fetch orders and extract pickup/dropoff
       const orders = await Order.find({ _id: { $in: order_ids } })
         .select(
-          "delivery.delivery_address seller_id restaurant_id seller restaurant order_items"
+          "delivery.delivery_address seller_id seller restaurant order_items"
         )
         .populate("seller_id", "business_name location")
-        .populate("restaurant_id", "business_name location")
         .lean();
       for (const o of orders) {
         if (stops.length >= maxStops * 2) break; // crude cap

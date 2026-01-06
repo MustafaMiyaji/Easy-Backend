@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 7
+    },
+    "auditLog": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\.125e2f0b87e95459ceba631724ccf514c523573e-audit.json",
+    "files": [
+        {
+            "date": 1767605470228,
+            "name": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\warn-2026-01-05.log",
+            "hash": "d898e0095847ee5a19f6f95447d16b9ae12fabc74b3fb0cccce41ddf84bcae15"
+        }
+    ],
+    "hashType": "sha256"
+}

@@ -48,7 +48,7 @@ const {
 // Rate limiting for admin routes
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === "test" ? 10000 : 500, // Increased from 100 to 500 for admin operations
   message: { error: "Too many admin requests, please try again later" },
   standardHeaders: true,
   legacyHeaders: false,
@@ -245,6 +245,10 @@ async function requireAdmin(req, res, next) {
         return next();
       }
     } catch (jwtError) {
+      // Log JWT verification errors for debugging
+      if (process.env.NODE_ENV !== "production") {
+        console.error("JWT verification failed:", jwtError.message);
+      }
       // If JWT fails, try as API key
       providedKey = token;
     }
@@ -804,6 +808,12 @@ router.get("/sellers/:sellerId", requireAdmin, async (req, res) => {
 });
 
 // Update a seller's address/location/place_id (same semantics as set-address)
+// DEPRECATED: Commented out on Dec 3, 2025 - This route conflicts with PATCH /sellers/:id at line 3378
+// This location-specific update route was causing test failures because Express matched it before
+// the general update route. Location updates now go through the general PATCH /sellers/:id route.
+// Frontend Note: If you were using PATCH /api/admin/sellers/:id with {address, lat, lng, place_id},
+// it will continue to work through the general update route below (line ~3378).
+/*
 router.patch("/sellers/:sellerId", requireAdmin, async (req, res) => {
   try {
     const { sellerId } = req.params;
@@ -861,6 +871,7 @@ router.patch("/sellers/:sellerId", requireAdmin, async (req, res) => {
     });
   }
 });
+*/
 
 // Test pickup string resolution for a seller (mirrors delivery endpoints logic)
 router.get("/sellers/:sellerId/test-pickup", requireAdmin, async (req, res) => {
@@ -1800,11 +1811,18 @@ router.get(
       // Get seller location
       const sellerId = order.seller_id;
       const seller = await Seller.findById(sellerId);
-      if (!seller || !seller.location || !seller.location.coordinates) {
+      // Seller schema uses {lat, lng} format, not GeoJSON coordinates
+      if (
+        !seller ||
+        !seller.location ||
+        typeof seller.location.lat !== "number" ||
+        typeof seller.location.lng !== "number"
+      ) {
         return res.status(400).json({ error: "Seller location not available" });
       }
 
-      const [sellerLng, sellerLat] = seller.location.coordinates;
+      const sellerLat = seller.location.lat;
+      const sellerLng = seller.location.lng;
 
       // Helper function to calculate distance (Haversine formula)
       function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -1823,18 +1841,20 @@ router.get(
 
       // Get all approved delivery agents
       const agents = await DeliveryAgent.find({ approved: true })
-        .select("_id name email phone active available location")
+        .select("_id name email phone active available current_location")
         .lean();
 
       // Calculate distance and format response
       const agentsWithDistance = agents.map((agent) => {
         let distance = null;
+        // DeliveryAgent schema uses current_location: {lat, lng}
         if (
-          agent.location &&
-          agent.location.coordinates &&
-          agent.location.coordinates.length === 2
+          agent.current_location &&
+          typeof agent.current_location.lat === "number" &&
+          typeof agent.current_location.lng === "number"
         ) {
-          const [agentLng, agentLat] = agent.location.coordinates;
+          const agentLat = agent.current_location.lat;
+          const agentLng = agent.current_location.lng;
           distance = calculateDistance(
             sellerLat,
             sellerLng,
@@ -2131,7 +2151,7 @@ router.get("/payouts", requireAdmin, async (req, res) => {
       {
         $group: {
           _id: "$seller_id",
-          total_sales: { $sum: "$total" },
+          total_sales: { $sum: "$payment.amount" },
           orders: { $sum: 1 },
         },
       },
@@ -2289,7 +2309,7 @@ router.get("/orders", requireAdmin, async (req, res) => {
 
     // Payment method filter
     if (payment_method) {
-      filter["payment_method"] = payment_method;
+      filter["payment.method"] = payment_method;
     }
 
     // Amount range filters
@@ -2297,7 +2317,7 @@ router.get("/orders", requireAdmin, async (req, res) => {
       const amountFilter = {};
       if (min_amount) amountFilter.$gte = parseFloat(min_amount);
       if (max_amount) amountFilter.$lte = parseFloat(max_amount);
-      filter["total_amount"] = amountFilter;
+      filter["payment.amount"] = amountFilter;
     }
 
     if (from || to) {
@@ -2321,7 +2341,7 @@ router.get("/orders", requireAdmin, async (req, res) => {
     if (search) {
       // Enhanced search: partial hex match on _id, match client/seller ids, or order_no
       const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-      filter.$or = [{ client_id: rx }, { seller_id: rx }, { order_no: rx }];
+      filter.$or = [{ client_id: rx }, { order_no: rx }];
       // If likely hex substring, add _id regex (inefficient without index but acceptable for small sets)
       if (/^[a-fA-F0-9]{3,24}$/.test(search)) {
         filter.$or.push({ _id: { $regex: rx } });
@@ -3152,6 +3172,27 @@ router.patch("/payouts/logs/:id/paid", requireAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/earning-logs - List earning logs with filtering by sellerId
+router.get("/earning-logs", requireAdmin, async (req, res) => {
+  try {
+    const { sellerId } = req.query;
+    const filter = {};
+
+    if (sellerId && mongoose.isValidObjectId(String(sellerId))) {
+      filter.seller_id = new mongoose.Types.ObjectId(String(sellerId));
+    }
+
+    const earnings = await EarningLog.find(filter)
+      .sort({ created_at: -1 })
+      .lean();
+
+    res.json({ earnings });
+  } catch (e) {
+    console.error("admin earning-logs error", e);
+    res.status(500).json({ error: "failed to fetch earning logs" });
+  }
+});
+
 // ==================== COMPREHENSIVE ADMIN CRUD OPERATIONS ====================
 
 // ---------------- CLIENT/USER CRUD ----------------
@@ -3348,15 +3389,28 @@ router.patch("/sellers/:id", requireAdmin, async (req, res) => {
       return res.status(400).json({ error: "Invalid seller ID" });
     }
 
-    const updatedSeller = await Seller.findByIdAndUpdate(
-      id,
-      { $set: req.body },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedSeller) {
+    // Use .findById() + .save() pattern for reliable unique index enforcement
+    const seller = await Seller.findById(id);
+    if (!seller) {
       return res.status(404).json({ error: "Seller not found" });
     }
+
+    // Check for duplicate email if email is being updated
+    if (req.body.email && req.body.email !== seller.email) {
+      const existingSeller = await Seller.findOne({
+        email: req.body.email,
+        _id: { $ne: id },
+      });
+      if (existingSeller) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+    }
+
+    // Apply updates
+    Object.assign(seller, req.body);
+
+    // Save with validation (enforces unique indexes)
+    const updatedSeller = await seller.save();
 
     res.json(updatedSeller);
   } catch (error) {
@@ -3368,27 +3422,9 @@ router.patch("/sellers/:id", requireAdmin, async (req, res) => {
   }
 });
 
-router.delete("/sellers/:id", requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({ error: "Invalid seller ID" });
-    }
-
-    // Legacy route kept for backward compatibility now delegates to cascade-aware delete.
-    const full = req.query.full === "1" || req.query.full === "true";
-    const seller = await Seller.findById(id);
-    if (!seller) {
-      return res.status(404).json({ error: "Seller not found" });
-    }
-    await seller.deleteOne();
-    const cascade = await _deleteSellerCascade(seller, {}, full);
-    res.json({ message: "Seller deleted", full, cascade });
-  } catch (error) {
-    console.error("delete seller error", error);
-    res.status(500).json({ error: "Failed to delete seller" });
-  }
-});
+// NOTE: Duplicate DELETE /sellers/:id route removed here (Nov 19, 2025)
+// Reason: Express router matches FIRST route at line 3228, this duplicate was unreachable dead code
+// All DELETE /sellers/:id requests are handled by the first route (lowercase error messages)
 
 // ---------------- PRODUCT CRUD ----------------
 router.post("/products", requireAdmin, async (req, res) => {

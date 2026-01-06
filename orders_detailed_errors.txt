@@ -1,0 +1,292 @@
+﻿
+> backend@1.0.0 test
+> jest --coverage --verbose tests/phase25_11_orders_medium.test.js
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+npm : FAIL tests/phase25_11_orders_medium.test.js
+At line:1 char:1
++ npm test -- tests/phase25_11_orders_medium.test.js 2>&1 | Out-File -F ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL tests/phas..._medium.test.js:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Phase 25.11: OrdersController.js Medium Effort Coverage
+    POST /api/orders - JWT Authentication Edge Cases
+      ΓêÜ 13.1: should fallback to client_id when JWT decode fails (lines 470-510) (165 ms)
+      ΓêÜ 13.2: should generate guest client_id when no auth and no client_id (lines 470-510) (10 ms)
+      ΓêÜ 13.3: should reject empty string client_id (lines 470-510) (7 ms)
+    POST /api/orders - Address Validation Complexity
+      ΓêÜ 13.4: should handle invalid delivery_address_id ObjectId format (lines 574-666) (5 ms)
+      ΓêÜ 13.5: should use alternative address lookup when ObjectId fails (lines 574-666) (9 ms)
+      ΓêÜ 13.6: should construct full_address from structured fields (lines 574-666) (6 ms)
+      ΓêÜ 13.7: should accept string delivery_address as fallback (lines 574-666) (6 ms)
+      ├ù 13.8: should return 400 when no delivery address provided (lines 574-666) (8 ms)
+    POST /api/orders - Product Validation Paths
+      ├ù 13.9: should reject order with unavailable product (status=inactive) (line 511) (64 ms)
+      ├ù 13.10: should use legacy 'available' field if status missing (line 511) (52 ms)
+      ΓêÜ 13.11: should check stock using 'stock_quantity' fallback (line 511) (129 ms)
+    POST /api/orders - Error Handling Paths
+      ΓêÜ 13.12: should handle buildGroupedOrders database error (line 795) (6 ms)
+      ΓêÜ 13.13: should handle assignNearestDeliveryAgent failure (lines 812-814) (6 ms)
+      ├ù 13.14: should handle order save error during final save (line 857) (9 ms)
+    GET /api/orders/:id/status - getStatus Edge Cases
+      ├ù 13.15: should return 500 when buildEnrichedSnapshot fails (lines 972-973) (1 ms)
+      ├ù 13.16: should calculate ETA minutes when eta_at in past (lines 987-991) (1 ms)
+    POST /api/orders/:id/verify - verifyPayment Scenarios
+      ├ù 13.17: should handle assignNearestDeliveryAgent failure during payment verification (line 1027) (1 ms)
+      ├ù 13.18: should handle Product.find error during seller notification (line 1057) (1 ms)
+    Edge Cases - Haversine & Enrichment
+      ΓêÜ 13.19: should handle haversineKm error gracefully (6 ms)
+      ├ù 13.20: should handle missing seller during enrichment (lines 856-857)
+      ├ù 13.21: should handle missing delivery agent during enrichment (lines 856-857)
+      ├ù 13.22: should handle Client.findOne error during admin enrichment (lines 972-973) (1 ms)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ POST /api/orders - Address Validation Complexity ΓÇ║ 13.8: should return 400 when no delivery address 
+provided (lines 574-666)
+
+    expect(received).toMatch(expected)
+
+    Expected pattern: /address/i
+    Received string:  "Validation failed"
+
+    [0m [90m 282 |[39m
+     [90m 283 |[39m       expect(response[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 284 |[39m       expect(response[33m.[39mbody[33m.[39merror)[33m.[39mtoMatch([35m/address/i[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 285 |[39m     })[33m;[39m
+     [90m 286 |[39m   })[33m;[39m
+     [90m 287 |[39m[0m
+
+      at Object.toMatch (tests/phase25_11_orders_medium.test.js:284:35)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ POST /api/orders - Product Validation Paths ΓÇ║ 13.9: should reject order with unavailable product 
+(status=inactive) (line 511)
+
+    expect(received).toMatch(expected)
+
+    Expected pattern: /unavailable|inactive/i
+    Received string:  "Validation failed"
+
+    [0m [90m 316 |[39m
+     [90m 317 |[39m       expect(response[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 318 |[39m       expect(response[33m.[39mbody[33m.[39merror)[33m.[39mtoMatch([35m/unavailable|inactive/i[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 319 |[39m
+     [90m 320 |[39m       [36mawait[39m [33mProduct[39m[33m.[39mdeleteOne({ _id[33m:[39m inactiveProduct[33m.[39m_id })[33m;[39m
+     [90m 321 |[39m     })[33m;[39m[0m
+
+      at Object.toMatch (tests/phase25_11_orders_medium.test.js:318:35)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ POST /api/orders - Product Validation Paths ΓÇ║ 13.10: should use legacy 'available' field if status 
+missing (line 511)
+
+    expect(received).toMatch(expected)
+
+    Expected pattern: /unavailable|not available/i
+    Received string:  "Validation failed"
+
+    [0m [90m 350 |[39m
+     [90m 351 |[39m       expect(response[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 352 |[39m       expect(response[33m.[39mbody[33m.[39merror)[33m.[39mtoMatch([35m/unavailable|not available/i[39m)[33m;[39m
+     [90m     |[39m                                   [31m[1m^[22m[39m
+     [90m 353 |[39m
+     [90m 354 |[39m       [36mawait[39m [33mProduct[39m[33m.[39mdeleteOne({ _id[33m:[39m legacyProduct[33m.[39m_id })[33m;[39m
+     [90m 355 |[39m     })[33m;[39m[0m
+
+      at Object.toMatch (tests/phase25_11_orders_medium.test.js:352:35)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ POST /api/orders - Error Handling Paths ΓÇ║ 13.14: should handle order save error during final save 
+(line 857)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 500
+    Received: 400
+
+    [0m [90m 482 |[39m         })[33m;[39m
+     [90m 483 |[39m
+    [31m[1m>[22m[39m[90m 484 |[39m       expect(response[33m.[39mstatus)[33m.[39mtoBe([35m500[39m)[33m;[39m
+     [90m     |[39m                               [31m[1m^[22m[39m
+     [90m 485 |[39m
+     [90m 486 |[39m       [33mOrder[39m[33m.[39mcreate [33m=[39m originalCreate[33m;[39m
+     [90m 487 |[39m     })[33m;[39m[0m
+
+      at Object.toBe (tests/phase25_11_orders_medium.test.js:484:31)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ GET /api/orders/:id/status - getStatus Edge Cases ΓÇ║ 13.15: should return 500 when 
+buildEnrichedSnapshot fails (lines 972-973)
+
+    TypeError: Cannot read properties of undefined (reading '_id')
+
+    [0m [90m 520 |[39m
+     [90m 521 |[39m       [36mconst[39m response [33m=[39m [36mawait[39m request(app)[33m.[39m[36mget[39m(
+    [31m[1m>[22m[39m[90m 522 |[39m         [32m`/api/orders/${order._id}/status`[39m
+     [90m     |[39m                              [31m[1m^[22m[39m
+     [90m 523 |[39m       )[33m;[39m
+     [90m 524 |[39m
+     [90m 525 |[39m       expect(response[33m.[39mstatus)[33m.[39mtoBe([35m500[39m)[33m;[39m[0m
+
+      at Object._id (tests/phase25_11_orders_medium.test.js:522:30)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ GET /api/orders/:id/status - getStatus Edge Cases ΓÇ║ 13.16: should calculate ETA minutes when eta_at 
+in past (lines 987-991)
+
+    TypeError: Cannot read properties of undefined (reading '_id')
+
+    [0m [90m 556 |[39m
+     [90m 557 |[39m       [36mconst[39m response [33m=[39m [36mawait[39m request(app)[33m.[39m[36mget[39m(
+    [31m[1m>[22m[39m[90m 558 |[39m         [32m`/api/orders/${order._id}/status`[39m
+     [90m     |[39m                              [31m[1m^[22m[39m
+     [90m 559 |[39m       )[33m;[39m
+     [90m 560 |[39m
+     [90m 561 |[39m       expect(response[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m[0m
+
+      at Object._id (tests/phase25_11_orders_medium.test.js:558:30)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ POST /api/orders/:id/verify - verifyPayment Scenarios ΓÇ║ 13.17: should handle 
+assignNearestDeliveryAgent failure during payment verification (line 1027)
+
+    TypeError: Cannot read properties of undefined (reading '_id')
+
+    [0m [90m 604 |[39m
+     [90m 605 |[39m       [36mconst[39m response [33m=[39m [36mawait[39m request(app)
+    [31m[1m>[22m[39m[90m 606 |[39m         [33m.[39mpost([32m`/api/orders/${order._id}/verify`[39m)
+     [90m     |[39m                                    [31m[1m^[22m[39m
+     [90m 607 |[39m         [33m.[39msend({
+     [90m 608 |[39m           razorpay_order_id[33m:[39m [32m"order_test123"[39m[33m,[39m
+     [90m 609 |[39m           razorpay_payment_id[33m:[39m [32m"pay_test123"[39m[33m,[39m[0m
+
+      at Object._id (tests/phase25_11_orders_medium.test.js:606:36)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ POST /api/orders/:id/verify - verifyPayment Scenarios ΓÇ║ 13.18: should handle Product.find error 
+during seller notification (line 1057)
+
+    TypeError: Cannot read properties of undefined (reading '_id')
+
+    [0m [90m 648 |[39m
+     [90m 649 |[39m       [36mconst[39m response [33m=[39m [36mawait[39m request(app)
+    [31m[1m>[22m[39m[90m 650 |[39m         [33m.[39mpost([32m`/api/orders/${order._id}/verify`[39m)
+     [90m     |[39m                                    [31m[1m^[22m[39m
+     [90m 651 |[39m         [33m.[39msend({
+     [90m 652 |[39m           razorpay_order_id[33m:[39m [32m"order_test123"[39m[33m,[39m
+     [90m 653 |[39m           razorpay_payment_id[33m:[39m [32m"pay_test123"[39m[33m,[39m[0m
+
+      at Object._id (tests/phase25_11_orders_medium.test.js:650:36)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ Edge Cases - Haversine & Enrichment ΓÇ║ 13.20: should handle missing seller during enrichment (lines 
+856-857)
+
+    TypeError: Cannot read properties of undefined (reading '_id')
+
+    [0m [90m 712 |[39m
+     [90m 713 |[39m       [36mconst[39m response [33m=[39m [36mawait[39m request(app)[33m.[39m[36mget[39m(
+    [31m[1m>[22m[39m[90m 714 |[39m         [32m`/api/orders/${order._id}/status`[39m
+     [90m     |[39m                              [31m[1m^[22m[39m
+     [90m 715 |[39m       )[33m;[39m
+     [90m 716 |[39m
+     [90m 717 |[39m       expect([[35m200[39m[33m,[39m [35m404[39m[33m,[39m [35m500[39m])[33m.[39mtoContain(response[33m.[39mstatus)[33m;[39m[0m
+
+      at Object._id (tests/phase25_11_orders_medium.test.js:714:30)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ Edge Cases - Haversine & Enrichment ΓÇ║ 13.21: should handle missing delivery agent during enrichment 
+(lines 856-857)
+
+    TypeError: Cannot read properties of undefined (reading '_id')
+
+    [0m [90m 746 |[39m
+     [90m 747 |[39m       [36mconst[39m response [33m=[39m [36mawait[39m request(app)[33m.[39m[36mget[39m(
+    [31m[1m>[22m[39m[90m 748 |[39m         [32m`/api/orders/${order._id}/status`[39m
+     [90m     |[39m                              [31m[1m^[22m[39m
+     [90m 749 |[39m       )[33m;[39m
+     [90m 750 |[39m
+     [90m 751 |[39m       expect([[35m200[39m[33m,[39m [35m404[39m[33m,[39m [35m500[39m])[33m.[39mtoContain(response[33m.[39mstatus)[33m;[39m[0m
+
+      at Object._id (tests/phase25_11_orders_medium.test.js:748:30)
+
+  ΓùÅ Phase 25.11: OrdersController.js Medium Effort Coverage ΓÇ║ Edge Cases - Haversine & Enrichment ΓÇ║ 13.22: should handle Client.findOne error during admin 
+enrichment (lines 972-973)
+
+    TypeError: Cannot read properties of undefined (reading '_id')
+
+    [0m [90m 785 |[39m
+     [90m 786 |[39m       [36mconst[39m response [33m=[39m [36mawait[39m request(app)[33m.[39m[36mget[39m(
+    [31m[1m>[22m[39m[90m 787 |[39m         [32m`/api/orders/${order._id}/status`[39m
+     [90m     |[39m                              [31m[1m^[22m[39m
+     [90m 788 |[39m       )[33m;[39m
+     [90m 789 |[39m
+     [90m 790 |[39m       expect([[35m200[39m[33m,[39m [35m500[39m])[33m.[39mtoContain(response[33m.[39mstatus)[33m;[39m[0m
+
+      at Object._id (tests/phase25_11_orders_medium.test.js:787:30)
+
+-------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+-------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+All files                |    6.94 |     0.59 |     2.6 |    7.32 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+ controllers             |    1.05 |        0 |       0 |    1.11 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  clientsController.js   |    2.24 |        0 |       0 |    2.43 | 6-221                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+  ordersController.js    |    0.86 |        0 |       0 |    0.91 | 21-1378                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+ middleware              |    20.6 |     8.76 |   24.07 |   20.72 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  cache.js               |   28.35 |    10.71 |   33.33 |   28.35 | 18-22,29-34,47-48,55-65,83-168                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+  cdn.js                 |    5.35 |     9.75 |    7.14 |    5.45 | 29-193                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  couponValidation.js    |       0 |        0 |       0 |       0 | 1-214                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+  imageOptimization.js   |    7.04 |        0 |       0 |    7.04 | 30-230                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  pagination.js          |   16.66 |        0 |      25 |   16.66 | 24-82                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+  validation.js          |    91.3 |    68.18 |     100 |   95.34 | 27,225                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  verifyFirebaseToken.js |    7.31 |        0 |       0 |    7.31 | 16-132                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+ routes                  |    6.91 |     0.09 |       0 |    7.29 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  admin.js               |    6.04 |     0.09 |       0 |     6.4 | 12-16,60-78,119-167,173-309,315-422,428-486,492-573,578-593,598-611,617-715,721-768,773-786,793-803,812-862,871-934,943-944,1000-1077,1082-1093,1099-1118,1123-1221,1226-1246,1252-1261,1267-1351,1372-1380,1389-1458,1467-1468,1477-1490,1499-1577,1581-1769,1778-1885,1895-2015,2023-2034,2039-2044,2049-2070,2075-2107,2112-2132,2138-2164,2170-2275,2281-2379,2384,2387,2396-2424,2434-2507,2517-2580,2590-2623,2633-2675,2686-2711,2716-2724,2729-2749,2754-2777,2782-2843,2848-2868,2874-2889,2893-2907,2911-2924,2930-2945,2949-2957,2961-2974,2981-3070,3077-3142,3149-3164,3170-3185,3193-3218,3223-3245,3250-3262,3268-3281,3287-3346,3351-3373,3379-3401,3411-3453,3459-3493,3499-3529,3534-3549,3555-3574,3580-3593 
+  auth.js                |     7.5 |        0 |       0 |    8.26 | 21-25,34-60,67-130,140-159,166-196,202-227,234-283,289-348,359-397,405-439,445-451,458-493,500-574                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+  cart.js                |   25.92 |        0 |       0 |   26.92 | 8-15,21-45                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+  clients.js             |   24.32 |        0 |       0 |   29.03 | 15-26,32-61                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+  delivery.js            |    3.02 |        0 |       0 |    3.15 | 24-116,122-305,311-486,492-783,787-921,927-1068,1074-1234,1240-1420,1426-1581,1587-1636,1642-1674,1680-1722,1728-1772,1778-1991,1997-2027,2034-2097,2104-2213,2221-2419,2425-2474,2480-2506,2513-2699,2709-2987                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  orders.js              |    12.5 |        0 |       0 |   13.22 | 30-132,147-165,170-266                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  products.js            |    5.91 |        0 |       0 |    6.15 | 12-60,67-94,101-124,132-169,182-424                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+  restaurant_manage.js   |   22.58 |        0 |       0 |   25.92 | 9-14,19-25,31-57                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+  restaurants.js         |   13.46 |        0 |       0 |   15.21 | 12-100                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  reviews.js             |   13.18 |        0 |       0 |   13.63 | 17-80,92-151,163-187,199-241,253-287,299-320                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+  seller.js              |    6.36 |        0 |       0 |    6.64 | 23-33,38-64,69-94,100-115,121-136,142-169,175-180,186-249,254-304,310-369,375-385,392-600,606-673,689-818,827-846,852-871,878-984,990-1017,1032-1422,1439-1546,1559-1609,1618-1646,1661-1719,1734-1835,1850-1890,1900-1937,1947-2007,2021-2111                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+  tokens.js              |   21.73 |        0 |       0 |   21.73 | 8-39                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+  uploads.js             |   21.05 |    14.28 |       0 |   22.22 | 17-77,83-97                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+  users.js               |   14.43 |        0 |       0 |   14.58 | 7-12,17-25,31-48,54-79,85-99,105-114,120-133,139-159,165-193,202-218                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+  wishlist.js            |   17.74 |        0 |       0 |   18.03 | 15-63,75-109,121-136,148-174,186-202                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+ services                |    4.45 |     0.73 |       0 |    4.93 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  geocode.js             |   15.21 |     6.89 |       0 |   17.07 | 13-70                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+  orderEvents.js         |    5.68 |        0 |       0 |    6.41 | 8-135                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+  pricing.js             |    2.98 |        0 |       0 |    3.22 | 7-142                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+  push.js                |    1.29 |        0 |       0 |    1.42 | 6-372                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+  upi.js                 |       0 |      100 |       0 |       0 | 3-8                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+-------------------------|---------|----------|---------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Jest: "global" coverage threshold for statements (15%) not met: 6.94%
+Jest: "global" coverage threshold for branches (10%) not met: 0.59%
+Jest: "global" coverage threshold for lines (15%) not met: 7.32%
+Jest: "global" coverage threshold for functions (10%) not met: 2.6%
+Test Suites: 1 failed, 1 total
+Tests:       11 failed, 11 passed, 22 total
+Snapshots:   0 total
+Time:        5.511 s, estimated 6 s
+Ran all test suites matching tests/phase25_11_orders_medium.test.js.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

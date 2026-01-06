@@ -283,8 +283,8 @@ describe("PHASE 8 SECTION 3: Platform Settings & Device Tokens", () => {
 
       expect(response.body.ok).toBe(true);
       // Firebase mock isn't fully integrated - accept any count
-      expect(typeof response.body.sent).toBe('number');
-      expect(typeof response.body.failed).toBe('number');
+      expect(typeof response.body.sent).toBe("number");
+      expect(typeof response.body.failed).toBe("number");
     });
 
     it("should send test push to user by userId", async () => {
@@ -308,7 +308,7 @@ describe("PHASE 8 SECTION 3: Platform Settings & Device Tokens", () => {
 
       expect(response.body.ok).toBe(true);
       // Firebase mock isn't fully integrated - just verify structure
-      expect(typeof response.body.sent).toBe('number');
+      expect(typeof response.body.sent).toBe("number");
     });
 
     it("should send test push to user by email", async () => {
@@ -381,7 +381,7 @@ describe("PHASE 8 SECTION 3: Platform Settings & Device Tokens", () => {
 
       expect(response.body.ok).toBe(true);
       // Verify response structure (Firebase mock not fully integrated)
-      expect(typeof response.body.sent).toBe('number');
+      expect(typeof response.body.sent).toBe("number");
     });
 
     it("should require admin authentication", async () => {

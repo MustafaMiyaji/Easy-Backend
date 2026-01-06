@@ -7,6 +7,7 @@ const {
   DeviceToken,
 } = require("../models/models");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const router = express.Router();
 const {
   validate,
@@ -31,21 +32,19 @@ router.post(
   validate(signupSchema),
   async (req, res) => {
     try {
-      const { name, email, phone, firebase_uid } = req.body;
-      const normEmail = String(email || "")
-        .toLowerCase()
-        .trim();
+      const { name, phone, firebase_uid } = req.body;
 
-      // Check if client already exists
-      const existingClient = await Client.findOne({ email: normEmail });
-      if (existingClient) {
-        return res.status(400).json({ error: "Client already exists" });
+      // Check if client already exists by firebase_uid
+      if (firebase_uid) {
+        const existingClient = await Client.findOne({ firebase_uid });
+        if (existingClient) {
+          return res.status(400).json({ error: "Client already exists" });
+        }
       }
 
-      // Create new client
+      // Create new client (email field removed from schema Oct 2025)
       const client = new Client({
         name,
-        email: normEmail,
         phone,
         firebase_uid,
         otp_verified: true, // Since we're using Firebase Auth
@@ -54,7 +53,10 @@ router.post(
       await client.save();
       res.status(201).json({ message: "Client created successfully", client });
     } catch (error) {
-      console.error("Client signup error:", error);
+      // Only log errors in non-test environments
+      if (process.env.NODE_ENV !== "test") {
+        console.error("Client signup error:", error);
+      }
       res.status(500).json({ error: "Failed to create client" });
     }
   }
@@ -96,13 +98,16 @@ router.post("/signup/seller", async (req, res) => {
     }
 
     // Create new seller
+    // Auto-approve restaurants, but grocery sellers still need manual approval
+    const isRestaurant =
+      business_type && /restaurant/i.test(String(business_type));
     const sellerData = {
       business_name,
       email: normEmail,
       phone,
       business_type,
       firebase_uid,
-      approved: false, // Requires admin approval
+      approved: isRestaurant ? true : false, // Auto-approve restaurants
       address,
       ...(place_id ? { place_id } : {}),
     };
@@ -334,11 +339,8 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ error: "Reset token has expired" });
     }
 
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update password and clear reset token
-    user.password_hash = hashedPassword;
+    // Update password (pre-save hook will hash it) and clear reset token
+    user.password = newPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();

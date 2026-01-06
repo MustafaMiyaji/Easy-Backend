@@ -8,7 +8,7 @@ const { paginationMiddleware, paginate } = require("../middleware/pagination");
 router.get(
   "/",
   paginationMiddleware({ defaultLimit: 20, maxLimit: 50 }),
-  cacheMiddleware(300, (req) => {
+  cacheMiddleware(60, (req) => {
     const { q, page, limit } = req.query;
     return `cache:restaurants:${q || "all"}:${page || 1}:${limit || 20}`;
   }),

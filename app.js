@@ -53,7 +53,7 @@ const app = express();
 
 // Trust proxy for Cloud Run (trust the first proxy - Google Load Balancer)
 // Using 1 instead of true to be more specific for express-rate-limit
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 // ========================================
 // SECURITY MIDDLEWARE (CRITICAL FIXES)
@@ -110,7 +110,7 @@ app.use(
 const isDevelopment = process.env.NODE_ENV !== "production";
 const globalLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute window (shorter window, easier to recover)
-  max: isDevelopment ? 200 : 60, // Dev: 200/min, Prod: 60/min
+  max: isDevelopment ? 500 : 300, // Dev: 500/min, Prod: 300/min (normal users won't hit this)
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
@@ -123,10 +123,10 @@ const globalLimiter = rateLimit({
 });
 app.use("/api/", globalLimiter);
 
-// 4. Stricter Rate Limiting for Auth Endpoints (5 attempts per 15 minutes)
+// 4. Auth Rate Limiting (20 failed attempts per 15 minutes)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: process.env.NODE_ENV === "test" ? 1000 : 20, // Increased from 5 to 20 for normal users
   skipSuccessfulRequests: true, // Only count failed attempts
   message: "Too many login attempts, please try again later.",
   validate: { trustProxy: false }, // Disable the validation warning
@@ -156,12 +156,36 @@ let adminSdkInitialized = false;
 try {
   const admin = require("firebase-admin");
   if (!admin.apps.length) {
+    let credentials = null;
+
+    // Try to parse GOOGLE_APPLICATION_CREDENTIALS if it's JSON content (from Secret Manager)
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      try {
+        // First try to treat it as JSON string (Cloud Run secret injection)
+        const credsStr = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        if (credsStr.startsWith("{")) {
+          credentials = JSON.parse(credsStr);
+          logger.debug(
+            "Parsed GOOGLE_APPLICATION_CREDENTIALS from JSON string"
+          );
+        } else {
+          // If not JSON, try to require it as a file path
+          credentials = require(credsStr);
+        }
+      } catch (parseError) {
+        logger.warn(
+          `Failed to parse GOOGLE_APPLICATION_CREDENTIALS: ${parseError.message}`
+        );
+      }
+    }
+
+    // Initialize with parsed credentials if available
+    if (credentials) {
       admin.initializeApp({
-        credential: admin.credential.cert(
-          require(process.env.GOOGLE_APPLICATION_CREDENTIALS)
-        ),
+        credential: admin.credential.cert(credentials),
       });
+      adminSdkInitialized = true;
+      logger.info("🔐 Firebase Admin initialized with credentials");
     } else {
       // Fallback: try to locate a file that matches firebase admin sdk naming
       const fs = require("fs");
@@ -174,6 +198,8 @@ try {
         admin.initializeApp({
           credential: admin.credential.cert(require(candidate)),
         });
+        adminSdkInitialized = true;
+        logger.info("🔐 Firebase Admin initialized from local file");
       } else {
         // Try scanning for any *firebase-adminsdk*.json under Backend directory (gitignored locally)
         const files = fs
@@ -188,6 +214,7 @@ try {
           admin.initializeApp({
             credential: admin.credential.cert(require(saPath)),
           });
+          adminSdkInitialized = true;
           logger.info(
             `🔐 Firebase Admin initialized from detected service account file: ${files[0]}`
           );
@@ -195,14 +222,16 @@ try {
           // Last resort: initialize with application default (works if running in GCP env)
           // Note: This will attempt to contact the GCP metadata server and will fail with ENOTFOUND locally.
           admin.initializeApp();
+          adminSdkInitialized = true;
           logger.warn(
             "⚠️ Firebase Admin falling back to Application Default Credentials. Set GOOGLE_APPLICATION_CREDENTIALS or place a service account JSON in Backend/."
           );
         }
       }
     }
+  } else {
+    // Admin already initialized (happens if this file is required multiple times)
     adminSdkInitialized = true;
-    logger.info("🔐 Firebase Admin initialized");
   }
   // Expose for later modules if needed
   global.firebaseAdmin = admin;
@@ -282,12 +311,30 @@ app.use("/api/reviews", reviewsRouter);
 app.use("/api/wishlist", wishlistRouter);
 
 // ========================================
+// APP VERSION ENDPOINT
+// ========================================
+app.get("/api/app-version", (req, res) => {
+  // Return minimum required app version
+  // Update these values when you want to force users to update
+  res.json({
+    minVersion: "1.0.5", // Minimum version name required
+    minBuildNumber: 10, // Minimum build number required
+    latestVersion: "1.0.5", // Latest version available
+    latestBuildNumber: 10, // Latest build number
+    updateRequired: false, // Set to true to force immediate update for all users
+    updateMessage:
+      "A new version is available with bug fixes and improvements.",
+  });
+});
+
+// ========================================
 // MANUAL BACKUP TRIGGER (Admin only - for testing)
 // ========================================
 app.post("/api/admin/backup-now", async (req, res) => {
   try {
     logger.info("📦 Manual backup triggered via API");
-    const { createBackup } = require("./scripts/backup-db");
+    // Use GCS-enabled backup script so daily backups are uploaded to Cloud Storage
+    const { createBackup } = require("./scripts/backup-db-gcs");
     const backupName = await createBackup();
     res.json({
       success: true,
@@ -353,66 +400,100 @@ app.use((err, req, res, next) => {
 
 const uri =
   process.env.DB_CONNECTION_STRING || "mongodb://127.0.0.1:27017/easy_app";
-let port = Number(process.env.PORT || 3000);
+let port = Number(process.env.PORT || 8080);
 
 async function start() {
+  // Start MongoDB connection in the background (non-blocking)
+  // This allows server to start even if MongoDB is temporarily unavailable
+  const connectMongoDB = async () => {
+    try {
+      await mongoose.connect(uri, { 
+        serverSelectionTimeoutMS: 10000,  // 10 second timeout for server selection
+        connectTimeoutMS: 10000            // 10 second connection timeout
+      });
+      logger.info("✅ Connected to MongoDB");
+    } catch (mongoErr) {
+      logger.warn("⚠️ MongoDB connection failed (will retry):", mongoErr.message);
+      // Retry after 5 seconds
+      setTimeout(connectMongoDB, 5000);
+    }
+  };
+  
+  // Start connection attempt without waiting (non-blocking)
+  connectMongoDB().catch(err => logger.error("MongoDB background connection error:", err));
+
   try {
-    await mongoose.connect(uri);
-    logger.info("✅ Connected to MongoDB");
 
-    // Start cron job for checking order assignment timeouts (runs every 3 minutes)
-    // Reduced frequency to prevent database overload
+    // Start cron job for checking order assignment timeouts (runs every 5 minutes)
+    // Increased interval to prevent overlapping executions and reduce database load
     let cronJobRunning = false; // Prevent overlapping executions
+    let lastCronRun = null;
 
-    cron.schedule("*/3 * * * *", async () => {
-      // Skip if previous job still running
-      if (cronJobRunning) {
-        logger.warn(
-          "⏰ Skipping cron job - previous execution still in progress"
-        );
-        return;
-      }
-
-      cronJobRunning = true;
-      try {
-        const axios = require("axios");
-
-        // PART 1: Check timeouts for assigned orders (existing functionality)
-        const timeoutResponse = await axios.post(
-          `http://localhost:${port}/api/delivery/check-timeouts`,
-          {},
-          { timeout: 30000 } // 30 second timeout
-        );
-        const timeoutData = timeoutResponse.data;
-        if (timeoutData.timedOutOrders > 0) {
-          logger.info(
-            `⏰ Timeout Check: ${timeoutData.timedOutOrders} orders found, ${timeoutData.reassignedCount} reassigned`
+    cron.schedule(
+      "*/5 * * * *",
+      async () => {
+        // Skip if previous job still running
+        if (cronJobRunning) {
+          logger.warn(
+            "⏰ Skipping cron job - previous execution still in progress"
           );
+          return;
         }
 
-        // PART 2: Retry abandoned pending orders (new functionality)
-        const retryResponse = await axios.post(
-          `http://localhost:${port}/api/delivery/retry-pending-orders`,
-          {},
-          { timeout: 30000 } // 30 second timeout
-        );
-        const retryData = retryResponse.data;
-        if (retryData.assigned > 0 || retryData.escalated > 0) {
-          logger.info(
-            `🔄 Pending Retry: ${retryData.assigned} assigned, ${retryData.escalated} escalated (${retryData.total_pending} total pending)`
+        cronJobRunning = true;
+        const startTime = Date.now();
+        lastCronRun = new Date();
+
+        try {
+          const axios = require("axios");
+
+          // PART 1: Check timeouts for assigned orders (existing functionality)
+          const timeoutResponse = await axios.post(
+            `http://localhost:${port}/api/delivery/check-timeouts`,
+            {},
+            { timeout: 25000 } // 25 second timeout (leave buffer before next cron)
           );
+          const timeoutData = timeoutResponse.data;
+          if (timeoutData.timedOutOrders > 0) {
+            logger.info(
+              `⏰ Timeout Check: ${timeoutData.timedOutOrders} orders found, ${timeoutData.reassignedCount} reassigned`
+            );
+          }
+
+          // PART 2: Retry abandoned pending orders (new functionality)
+          const retryResponse = await axios.post(
+            `http://localhost:${port}/api/delivery/retry-pending-orders`,
+            {},
+            { timeout: 25000 } // 25 second timeout
+          );
+          const retryData = retryResponse.data;
+          if (retryData.assigned > 0 || retryData.escalated > 0) {
+            logger.info(
+              `🔄 Pending Retry: ${retryData.assigned} assigned, ${retryData.escalated} escalated (${retryData.total_pending} total pending)`
+            );
+          }
+
+          const duration = Date.now() - startTime;
+          if (duration > 120000) {
+            // Warn if taking more than 2 minutes
+            logger.warn(`⏰ Cron job took ${(duration / 1000).toFixed(1)}s`);
+          }
+        } catch (error) {
+          // Only log if it's not a connection error (server not ready yet)
+          if (error.code !== "ECONNREFUSED") {
+            logger.error("⏰ Cron job failed:", error.message);
+          }
+        } finally {
+          cronJobRunning = false; // Always release lock
         }
-      } catch (error) {
-        // Only log if it's not a connection error (server not ready yet)
-        if (error.code !== "ECONNREFUSED") {
-          logger.error("⏰ Cron job failed:", error.message);
-        }
-      } finally {
-        cronJobRunning = false; // Always release lock
+      },
+      {
+        scheduled: true,
+        timezone: "UTC",
       }
-    });
+    );
     logger.info(
-      "⏰ Cron job scheduled: Checking order timeouts & retrying pending orders every 3 minutes"
+      "⏰ Cron job scheduled: Checking order timeouts & retrying pending orders every 5 minutes"
     );
 
     // ========================================
@@ -422,15 +503,22 @@ async function start() {
 
     cron.schedule("0 2 * * *", async () => {
       try {
-        logger.info("🗄️  Starting automated daily database backup...");
-        const backupName = await createBackup();
-        logger.info(`✅ Automated backup completed: ${backupName}`);
+        logger.info("🗄️  Starting automated daily database backup to GCS...");
+        const result = await createBackup();
+        logger.info(`✅ Automated backup completed: ${result.backupName}`);
+        if (result.gcs) {
+          logger.info(
+            `📤 Backup uploaded to GCS: ${result.gcs.uploadCount} files`
+          );
+        }
       } catch (error) {
         logger.error("❌ Automated backup failed:", error.message);
         // Send alert notification here if needed (email/SMS)
       }
     });
-    logger.info("🗄️  Automated backup scheduled: Daily at 2:00 AM");
+    logger.info(
+      "🗄️  Automated backup scheduled: Daily at 2:00 AM (uploads to GCS)"
+    );
 
     const startListen = () =>
       app
@@ -469,8 +557,8 @@ async function start() {
         });
     startListen();
   } catch (err) {
-    logger.error("❌ Failed to start server:", err);
-    process.exit(1);
+    logger.error("❌ Failed to start cron/backup jobs:", err);
+    // Don't exit - server should still run even if cron fails to init
   }
 }
 

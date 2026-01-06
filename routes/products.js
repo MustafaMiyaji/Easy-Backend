@@ -62,6 +62,39 @@ router.get(
   }
 );
 
+// GET /api/products/:id - Get single product details
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ error: "Invalid product ID" });
+    }
+
+    const product = await Product.findOne({ _id: id, status: "active" })
+      .populate("seller_id", "business_name address cuisine is_open")
+      .lean();
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Format response similar to list endpoint
+    const formatted = {
+      ...product,
+      seller_name: product.seller_id ? product.seller_id.business_name : null,
+      seller_address: product.seller_id ? product.seller_id.address : null,
+      seller_cuisine: product.seller_id ? product.seller_id.cuisine : null,
+      seller_is_open: product.seller_id ? product.seller_id.is_open : null,
+    };
+
+    return res.json(formatted);
+  } catch (err) {
+    console.error("Error fetching product:", err);
+    return res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
+
 // POST /api/products/prices  { ids: ["..."] }
 // Returns latest authoritative pricing & name info for provided product ids.
 router.post("/prices", async (req, res) => {
@@ -233,7 +266,13 @@ router.post("/quote", async (req, res) => {
     try {
       settings = await PlatformSettings.findOne(
         {},
-        { coupons: 1, delivery_charge_grocery: 1, delivery_charge_food: 1 }
+        {
+          coupons: 1,
+          delivery_charge_grocery: 1,
+          delivery_charge_food: 1,
+          min_total_for_delivery_charge: 1,
+          free_delivery_threshold: 1,
+        }
       ).lean();
     } catch (_) {}
 
@@ -261,6 +300,11 @@ router.post("/quote", async (req, res) => {
             (!c.validFrom || new Date(c.validFrom) <= now) &&
             (!c.validTo || new Date(c.validTo) >= now);
           const minOk = subtotal >= (Number(c.minSubtotal) || 0);
+          // Check max total usage limit
+          const usageOk =
+            c.usage_limit === null ||
+            c.usage_limit === undefined ||
+            (Number(c.usage_count) || 0) < Number(c.usage_limit);
           // Category scoping: if categories provided, require intersection with present categories
           let catOk = true;
           if (Array.isArray(c.categories) && c.categories.length > 0) {
@@ -271,7 +315,7 @@ router.post("/quote", async (req, res) => {
                 (x === "food" && present.food)
             );
           }
-          return codeOk && activeOk && timeOk && minOk && catOk;
+          return codeOk && activeOk && timeOk && minOk && usageOk && catOk;
         });
         if (found && found.percent > 0) {
           discount =
