@@ -2660,14 +2660,21 @@ router.post("/check-timeouts", async (req, res) => {
           );
           reassignedCount++;
 
-          // Notify via SSE
+          // Notify via SSE and Push Notifications
           try {
-            const updatedOrder = await Order.findById(order._id);
+            const updatedOrder = await Order.findById(order._id)
+              .populate("client_id")
+              .populate("delivery.delivery_agent_id")
+              .lean();
             const snapshot = await buildSnapshot(updatedOrder);
             publish(String(order._id), snapshot);
             if (snapshot.seller_id) {
               publishToSeller(String(snapshot.seller_id), snapshot);
             }
+            // Send push notification to new delivery agent
+            await notifyOrderUpdate(updatedOrder, snapshot, {
+              exclude: ["seller"],
+            });
           } catch (publishErr) {
             console.error("Error publishing timeout reassignment:", publishErr);
           }

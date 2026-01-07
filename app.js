@@ -499,7 +499,7 @@ async function start() {
     // ========================================
     // AUTOMATED DATABASE BACKUP (Daily at 2 AM)
     // ========================================
-    const { createBackup } = require("./scripts/backup-db");
+    const { createBackup } = require("./scripts/backup-db-gcs");
 
     cron.schedule("0 2 * * *", async () => {
       try {
@@ -512,7 +512,8 @@ async function start() {
           );
         }
       } catch (error) {
-        logger.error("❌ Automated backup failed:", error.message);
+        logger.error("❌ Automated backup failed:", error);
+        logger.error("❌ Backup error stack:", error.stack);
         // Send alert notification here if needed (email/SMS)
       }
     });
