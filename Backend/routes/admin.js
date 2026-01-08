@@ -2687,6 +2687,27 @@ router.get("/coupons/:code/usage", requireAdmin, async (req, res) => {
   }
 });
 
+// Manual backup trigger (admin only)
+router.post("/trigger-backup", requireAdmin, async (req, res) => {
+  try {
+    const { createBackup } = require("../scripts/backup-db-gcs");
+    const result = await createBackup();
+    res.json({
+      success: true,
+      message: "Backup completed successfully",
+      backupName: result.backupName,
+      gcs: result.gcs,
+    });
+  } catch (error) {
+    console.error("Manual backup failed:", error);
+    res.status(500).json({
+      success: false,
+      error: "Backup failed",
+      message: error.message,
+    });
+  }
+});
+
 module.exports = router;
 // ---------------- Extended Admin: Delivery Agents ----------------
 router.get("/delivery-agents", requireAdmin, async (req, res) => {

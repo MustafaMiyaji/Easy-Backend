@@ -4,10 +4,22 @@ const { DeviceToken, Admin, Product } = require("../models/models");
 async function sendToFcm(tokens, payload) {
   // Ensure we have initialized admin (set in app.js)
   const admin = global.firebaseAdmin;
-  if (!admin || !admin.messaging) {
+  if (!admin) {
+    console.warn(
+      "⚠️ Push notification skipped: Firebase Admin SDK not initialized (global.firebaseAdmin is null/undefined)"
+    );
     return { skipped: true, reason: "firebase admin not initialized" };
   }
-  if (!tokens || tokens.length === 0) return { ok: true, sent: 0 };
+  if (!admin.messaging) {
+    console.warn(
+      "⚠️ Push notification skipped: Firebase Admin SDK messaging() function not available"
+    );
+    return { skipped: true, reason: "firebase admin messaging not available" };
+  }
+  if (!tokens || tokens.length === 0) {
+    console.log("ℹ️ Push notification skipped: No device tokens provided");
+    return { ok: true, sent: 0 };
+  }
 
   // FCM v1 requires data values to be strings.
   const data = {};
@@ -63,15 +75,64 @@ async function sendToFcm(tokens, payload) {
       },
     };
     try {
+      console.log(
+        `📤 Sending push notification to ${chunk.length} devices: "${baseNotification.title}"`
+      );
       const resp = await admin.messaging().sendEachForMulticast(message);
       successCount += resp.successCount || 0;
       failureCount += resp.failureCount || 0;
+      console.log(
+        `✅ Push sent: ${resp.successCount} succeeded, ${resp.failureCount} failed`
+      );
+
+      // Log detailed failure reasons and cleanup invalid tokens
+      if (resp.failureCount > 0 && resp.responses) {
+        const invalidTokens = [];
+        resp.responses.forEach((response, idx) => {
+          if (!response.success) {
+            console.error(
+              `   ❌ Token ${idx + 1} failed: ${
+                response.error?.code || "unknown"
+              } - ${response.error?.message || "no details"}`
+            );
+
+            // Collect invalid tokens for cleanup
+            const errorCode = response.error?.code;
+            if (
+              errorCode === "messaging/registration-token-not-registered" ||
+              errorCode === "messaging/invalid-registration-token"
+            ) {
+              invalidTokens.push(batch[idx]);
+            }
+          }
+        });
+
+        // Remove invalid tokens from database
+        if (invalidTokens.length > 0) {
+          try {
+            const DeviceToken = require("../models/DeviceToken");
+            await DeviceToken.deleteMany({ token: { $in: invalidTokens } });
+            console.log(
+              `🧹 Cleaned up ${invalidTokens.length} invalid token(s)`
+            );
+          } catch (cleanupErr) {
+            console.error(`⚠️ Token cleanup failed: ${cleanupErr.message}`);
+          }
+        }
+      }
+
       results.push(resp);
     } catch (err) {
+      console.error(
+        `❌ Push notification send error: ${err.message || String(err)}`
+      );
       results.push({ error: err.message || String(err) });
     }
   }
 
+  console.log(
+    `📊 Push notification summary: ${successCount} sent, ${failureCount} failed out of ${tokens.length} tokens`
+  );
   return { ok: true, sent: successCount, failed: failureCount, results };
 }
 
@@ -104,8 +165,18 @@ function computeKinds(order, snapshot) {
 
 async function notifyOrderUpdate(order, snapshot, opts = {}) {
   try {
+    console.log(
+      `🔔 notifyOrderUpdate called for order: ${
+        order?._id || "unknown"
+      }, status: ${snapshot?.status || "unknown"}`
+    );
     const exclude = new Set(
       Array.isArray(opts.excludeRoles) ? opts.excludeRoles.map(String) : []
+    );
+    console.log(
+      `   Excluded roles: ${
+        exclude.size ? Array.from(exclude).join(", ") : "none"
+      }`
     );
     // Collect tokens per role for customized notifications
     const clientTokens = new Set();
@@ -192,6 +263,13 @@ async function notifyOrderUpdate(order, snapshot, opts = {}) {
     } catch (e) {
       console.warn("admin tokens fetch failed", e.message);
     }
+
+    console.log(`📱 Token collection complete:`);
+    console.log(`   Client tokens: ${clientTokens.size}`);
+    console.log(`   Seller tokens: ${sellerTokens.size}`);
+    console.log(`   Agent tokens: ${agentTokens.size}`);
+    console.log(`   Admin tokens: ${adminTokens.size}`);
+
     // Prepare role-aware title/body
     const kinds = computeKinds(order, snapshot);
     const kindsText = kinds.length ? ` (${kinds.join(", ")})` : "";
@@ -328,18 +406,21 @@ async function notifyOrderUpdate(order, snapshot, opts = {}) {
       const agentBodyFull = `${agentBody} • Items: ${itemCount} • Amount: ₹${Number(
         amount || 0
       ).toFixed(2)}`;
+      console.log(
+        `📦 Preparing delivery agent notification: "${agentTitle}" for ${agentTokens.size} tokens`
+      );
       results.push(
         await sendToFcm(Array.from(agentTokens), {
           notification: {
             title: agentTitle,
             body: agentBodyFull,
-            android_channel_id: "orders_alerts",
+            android_channel_id: "orders_alerts_v2",
             sound: "default",
           },
           data: {
             ...dataCommon,
             is_offer: "true",
-            android_channel_id: "orders_alerts",
+            android_channel_id: "orders_alerts_v2",
             route: "/agent-offer",
             audience: "agent",
           },
