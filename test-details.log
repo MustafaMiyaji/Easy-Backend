@@ -1,0 +1,1165 @@
+﻿
+> backend@1.0.0 test
+> jest --coverage --verbose --verbose
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:12 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:24:12 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:12 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:24:12 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:24:12 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.error
+    Invalid or missing agentId: undefined
+
+    [0m [90m 1522 |[39m
+     [90m 1523 |[39m     [36mif[39m ([33m![39magentId [33m||[39m [33m![39mmongoose[33m.[39misValidObjectId(agentId)) {
+    [31m[1m>[22m[39m[90m 1524 |[39m       console[33m.[39merror([32m"Invalid or missing agentId:"[39m[33m,[39m agentId)[33m;[39m
+     [90m      |[39m               [31m[1m^[22m[39m
+     [90m 1525 |[39m       [36mreturn[39m res[33m.[39mstatus([35m400[39m)[33m.[39mjson({ error[33m:[39m [32m"Valid agentId required"[39m })[33m;[39m
+     [90m 1526 |[39m     }
+     [90m 1527 |[39m[0m
+
+      at error (routes/delivery.js:1524:15)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at next (node_modules/express/lib/router/route.js:149:13)
+      at Route.dispatch (node_modules/express/lib/router/route.js:119:3)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at node_modules/express/lib/router/index.js:284:15
+      at Function.process_params (node_modules/express/lib/router/index.js:346:12)
+      at next (node_modules/express/lib/router/index.js:280:10)
+      at Function.handle (node_modules/express/lib/router/index.js:175:3)
+      at router (node_modules/express/lib/router/index.js:47:12)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at trim_prefix (node_modules/express/lib/router/index.js:328:13)
+      at node_modules/express/lib/router/index.js:286:9
+      at Function.process_params (node_modules/express/lib/router/index.js:346:12)
+      at next (node_modules/express/lib/router/index.js:280:10)
+      at next (app.js:221:18)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at trim_prefix (node_modules/express/lib/router/index.js:328:13)
+      at node_modules/express/lib/router/index.js:286:9
+      at Function.process_params (node_modules/express/lib/router/index.js:346:12)
+      at next (node_modules/express/lib/router/index.js:280:10)
+      at urlencodedParser (node_modules/body-parser/lib/types/urlencoded.js:85:7)
+      at Layer.handle [as handle_request] (node_modules/express/lib/router/layer.js:95:5)
+      at trim_prefix (node_modules/express/lib/router/index.js:328:13)
+      at node_modules/express/lib/router/index.js:286:9
+      at Function.process_params (node_modules/express/lib/router/index.js:346:12)
+      at next (node_modules/express/lib/router/index.js:280:10)
+      at node_modules/body-parser/lib/read.js:137:5
+      at invokeCallback (node_modules/raw-body/index.js:238:16)
+      at done (node_modules/raw-body/index.js:227:7)
+      at IncomingMessage.onEnd (node_modules/raw-body/index.js:287:7)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+npm : FAIL tests/delivery.test.js (13.028 s)
+At line:1 char:13
++ cd Backend; npm test -- --verbose 2>&1 | Out-File -FilePath test-deta ...
++             ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL tests/delivery.test.js (13.028 s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Delivery System - Integration Tests
+    Agent Assignment Logic
+      ├ù should assign nearest available agent to order (1708 ms)
+      ├ù should not assign agent who is already on delivery (576 ms)
+      ├ù should fail if no agents available within radius (587 ms)
+    Agent Order Management
+      ├ù agent should be able to accept assigned order (501 ms)
+      ├ù agent should be able to reject order (513 ms)
+      ├ù agent cannot accept order assigned to another agent (510 ms)
+      ├ù agent should update order to picked up (493 ms)
+      ├ù agent should complete delivery (499 ms)
+    Location Tracking
+      ├ù agent should update location in real-time (634 ms)
+      ├ù should retrieve agent location for tracking (497 ms)
+    Order Timeout & Retry Logic
+      ├ù should reassign order if agent doesn't accept within timeout (503 ms)
+      ├ù should retry pending orders (495 ms)
+    Agent Earnings
+      ├ù agent earnings should update after delivery completion (520 ms)
+      ├ù should retrieve agent earnings history (500 ms)
+    Agent Availability
+      ├ù agent should toggle availability status (548 ms)
+      ├ù unavailable agent should not receive new assignments (594 ms)
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Assignment Logic ΓÇ║ should assign nearest available agent to order
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 400
+
+    [0m [90m 119 |[39m         [33m.[39m[36mset[39m([32m"Authorization"[39m[33m,[39m [32m`Bearer mock_token_${testClient.firebase_uid}`[39m)[33m;[39m
+     [90m 120 |[39m
+    [31m[1m>[22m[39m[90m 121 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 122 |[39m       expect(res[33m.[39mbody[33m.[39mdelivery_agent_id)[33m.[39mtoBeDefined()[33m;[39m
+     [90m 123 |[39m
+     [90m 124 |[39m       [36mconst[39m order [33m=[39m [36mawait[39m [33mOrder[39m[33m.[39mfindById(res[33m.[39mbody[33m.[39m_id)[33m;[39m[0m
+
+      at Object.toBe (tests/delivery.test.js:121:26)
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Assignment Logic ΓÇ║ should not assign agent who is already on delivery
+
+    MongoServerError: Can't extract geo keys: { _id: ObjectId('6911e077e668230196443f12'), name: "Agent Two", email: "agent2@test.com", phone: "9876543213", approved: 
+true, active: true, available: true, assigned_orders: 0, completed_orders: 0, rating: 0, total_ratings: 0, vehicle_type: "bike", current_location: { updated_at: new 
+Date(1762779255024) }, working_hours: { start: "09:00", end: "21:00" }, created_at: new Date(1762779255024), __v: 0 }  unknown GeoJSON type: { updated_at: new 
+Date(1762779255024) }
+
+      at InsertOneOperation.execute (node_modules/mongoose/node_modules/mongodb/src/operations/insert.ts:88:13)
+      at tryOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:283:14)
+      at executeOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:115:12)
+      at Collection.insertOne (node_modules/mongoose/node_modules/mongodb/src/collection.ts:286:12)
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Assignment Logic ΓÇ║ should fail if no agents available within radius
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 503
+    Received: 400
+
+    [0m [90m 191 |[39m         [33m.[39m[36mset[39m([32m"Authorization"[39m[33m,[39m [32m`Bearer mock_token_${testClient.firebase_uid}`[39m)[33m;[39m
+     [90m 192 |[39m
+    [31m[1m>[22m[39m[90m 193 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m503[39m)[33m;[39m [90m// Service unavailable[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 194 |[39m       expect(res[33m.[39mbody[33m.[39merror)[33m.[39mtoMatch([35m/no.*agent.*available/i[39m)[33m;[39m
+     [90m 195 |[39m     })[33m;[39m
+     [90m 196 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (tests/delivery.test.js:193:26)
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Order Management ΓÇ║ agent should be able to accept assigned order
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Order Management ΓÇ║ agent should be able to reject order
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Order Management ΓÇ║ agent cannot accept order assigned to another agent
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Order Management ΓÇ║ agent should update order to picked up
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Order Management ΓÇ║ agent should complete delivery
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Location Tracking ΓÇ║ agent should update location in real-time
+
+    TypeError: Cannot read properties of undefined (reading '1')
+
+    [0m [90m 299 |[39m
+     [90m 300 |[39m       [36mconst[39m updatedAgent [33m=[39m [36mawait[39m [33mDeliveryAgent[39m[33m.[39mfindById(testAgent1[33m.[39m_id)[33m;[39m
+    [31m[1m>[22m[39m[90m 301 |[39m       
+expect(updatedAgent[33m.[39mcurrent_location[33m.[39mcoordinates[[35m1[39m])[33m.[39mtoBe(newLocation[33m.[39mlatitude)[33m;[39m
+     [90m     |[39m                                                       [31m[1m^[22m[39m
+     [90m 302 |[39m       expect(updatedAgent[33m.[39mcurrent_location[33m.[39mcoordinates[[35m0[39m])[33m.[39mtoBe(newLocation[33m.[39mlongitude)[33m;[39m
+     [90m 303 |[39m     })[33m;[39m
+     [90m 304 |[39m[0m
+
+      at Object.<anonymous> (tests/delivery.test.js:301:55)
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Location Tracking ΓÇ║ should retrieve agent location for tracking
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., status: `out_for_delivery` is not a valid enum value for path `status`., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Order Timeout & Retry Logic ΓÇ║ should reassign order if agent doesn't accept within timeout
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Order Timeout & Retry Logic ΓÇ║ should retry pending orders
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Earnings ΓÇ║ agent earnings should update after delivery completion
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., status: `out_for_delivery` is not a valid enum value for path `status`., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Earnings ΓÇ║ should retrieve agent earnings history
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+    [0m [90m 395 |[39m         [33m.[39m[36mset[39m([32m"x-agent-id"[39m[33m,[39m testAgent1[33m.[39m_id[33m.[39mtoString())[33m;[39m
+     [90m 396 |[39m
+    [31m[1m>[22m[39m[90m 397 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 398 |[39m       expect(res[33m.[39mbody[33m.[39mtotal_earnings)[33m.[39mtoBeDefined()[33m;[39m
+     [90m 399 |[39m       expect([33mArray[39m[33m.[39misArray(res[33m.[39mbody[33m.[39mrecent_deliveries))[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 400 |[39m     })[33m;[39m[0m
+
+      at Object.toBe (tests/delivery.test.js:397:26)
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Availability ΓÇ║ agent should toggle availability status
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 408 |[39m         [33m.[39m[36mset[39m([32m"x-agent-id"[39m[33m,[39m testAgent1[33m.[39m_id[33m.[39mtoString())[33m;[39m
+     [90m 409 |[39m
+    [31m[1m>[22m[39m[90m 410 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 411 |[39m       expect(res[33m.[39mbody[33m.[39mavailable)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 412 |[39m
+     [90m 413 |[39m       [36mconst[39m updatedAgent [33m=[39m [36mawait[39m [33mDeliveryAgent[39m[33m.[39mfindById(testAgent1[33m.[39m_id)[33m;[39m[0m
+
+      at Object.toBe (tests/delivery.test.js:410:26)
+
+  ΓùÅ Delivery System - Integration Tests ΓÇ║ Agent Availability ΓÇ║ unavailable agent should not receive new assignments
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 503
+    Received: 400
+
+    [0m [90m 432 |[39m         [33m.[39m[36mset[39m([32m"Authorization"[39m[33m,[39m [32m`Bearer mock_token_${testClient.firebase_uid}`[39m)[33m;[39m
+     [90m 433 |[39m
+    [31m[1m>[22m[39m[90m 434 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m503[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 435 |[39m     })[33m;[39m
+     [90m 436 |[39m   })[33m;[39m
+     [90m 437 |[39m })[33m;[39m[0m
+
+      at Object.toBe (tests/delivery.test.js:434:26)
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ΓÜÖ∩╕Å  load multiple .env files with { path: ['.env.local', '.env'] }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:24 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:24:24 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ≡ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:24 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:24:24 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:24:24 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+FAIL tests/seller.test.js (10.924 s)
+  Seller - Integration Tests
+    POST /api/seller/products - Create Product
+      ΓêÜ should create product successfully (1369 ms)
+      ΓêÜ should fail without seller authentication (310 ms)
+      ΓêÜ should fail with missing required fields (291 ms)
+      ΓêÜ restaurant products should have high default stock (516 ms)
+    GET /api/seller/products - List Seller Products
+      ΓêÜ should return seller's products only (487 ms)
+    PUT /api/seller/products/:id - Update Product
+      ΓêÜ should update product successfully (337 ms)
+      ΓêÜ should not update product of another seller (427 ms)
+    PATCH /api/seller/products/:id - Partial Update
+      ΓêÜ should update single field (330 ms)
+    DELETE /api/seller/products/:id - Delete Product
+      ΓêÜ should soft delete (deactivate) product by default (368 ms)
+      ΓêÜ should permanently delete product with permanent=true (384 ms)
+    POST /api/seller/toggle-open - Toggle Availability
+      ΓêÜ should toggle seller open status (369 ms)
+      ΓêÜ should require boolean value (290 ms)
+    GET /api/seller/orders - List Seller Orders
+      ΓêÜ should return orders containing seller's products (424 ms)
+      ├ù should paginate seller orders (331 ms)
+    POST /api/seller/orders/accept - Accept Order
+      ├ù should accept order successfully (830 ms)
+      ├ù should fail with invalid order ID (314 ms)
+    GET /api/seller/analytics - Seller Analytics
+      ├ù should return seller analytics (331 ms)
+      ├ù should filter analytics by date range (322 ms)
+    GET /api/seller/inventory - Inventory Management
+      ΓêÜ should return low stock products (371 ms)
+      ΓêÜ should return inventory stats (323 ms)
+
+  ΓùÅ Seller - Integration Tests ΓÇ║ GET /api/seller/orders - List Seller Orders ΓÇ║ should paginate seller orders
+
+    MongoServerError: E11000 duplicate key error collection: grocery_db_test.clients index: phone_1 dup key: { phone: "9876543211" }
+
+      at InsertOneOperation.execute (node_modules/mongoose/node_modules/mongodb/src/operations/insert.ts:88:13)
+      at tryOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:283:14)
+      at executeOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:115:12)
+      at Collection.insertOne (node_modules/mongoose/node_modules/mongodb/src/collection.ts:286:12)
+
+  ΓùÅ Seller - Integration Tests ΓÇ║ POST /api/seller/orders/accept - Accept Order ΓÇ║ should accept order successfully
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "accepted"
+    Received: undefined
+
+    [0m [90m 350 |[39m
+     [90m 351 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 352 |[39m       expect(res[33m.[39mbody[33m.[39mstatus)[33m.[39mtoBe([32m"accepted"[39m)[33m;[39m
+     [90m     |[39m                               [31m[1m^[22m[39m
+     [90m 353 |[39m
+     [90m 354 |[39m       [36mconst[39m updatedOrder [33m=[39m [36mawait[39m [33mOrder[39m[33m.[39mfindById(testOrder[33m.[39m_id)[33m;[39m
+     [90m 355 |[39m       expect(updatedOrder[33m.[39mstatus)[33m.[39mtoBe([32m"accepted"[39m)[33m;[39m[0m
+
+      at Object.toBe (tests/seller.test.js:352:31)
+
+  ΓùÅ Seller - Integration Tests ΓÇ║ POST /api/seller/orders/accept - Accept Order ΓÇ║ should fail with invalid order ID
+
+    MongoServerError: E11000 duplicate key error collection: grocery_db_test.clients index: phone_1 dup key: { phone: "9876543213" }
+
+      at InsertOneOperation.execute (node_modules/mongoose/node_modules/mongodb/src/operations/insert.ts:88:13)
+      at tryOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:283:14)
+      at executeOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:115:12)
+      at Collection.insertOne (node_modules/mongoose/node_modules/mongodb/src/collection.ts:286:12)
+
+  ΓùÅ Seller - Integration Tests ΓÇ║ GET /api/seller/analytics - Seller Analytics ΓÇ║ should return seller analytics
+
+    ValidationError: Order validation failed: delivery.delivery_address.full_address: Path `delivery.delivery_address.full_address` is required., payment.amount: Path 
+`payment.amount` is required., order_items.0.qty: Path `qty` is required.
+
+      at model.Document.invalidate (node_modules/mongoose/lib/document.js:3358:32)
+      at node_modules/mongoose/lib/document.js:3119:17
+      at node_modules/mongoose/lib/schemaType.js:1416:9
+
+  ΓùÅ Seller - Integration Tests ΓÇ║ GET /api/seller/analytics - Seller Analytics ΓÇ║ should filter analytics by date range
+
+    MongoServerError: E11000 duplicate key error collection: grocery_db_test.clients index: phone_1 dup key: { phone: "9876543215" }
+
+      at InsertOneOperation.execute (node_modules/mongoose/node_modules/mongodb/src/operations/insert.ts:88:13)
+      at tryOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:283:14)
+      at executeOperation (node_modules/mongoose/node_modules/mongodb/src/operations/execute_operation.ts:115:12)
+      at Collection.insertOne (node_modules/mongoose/node_modules/mongodb/src/collection.ts:286:12)
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ΓÜÖ∩╕Å  write to custom object with { processEnv: myObject }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:35 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:24:35 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ≡ƒôí observe env with Radar: https://dotenvx.com/radar
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:35 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:24:35 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:24:35 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+FAIL tests/products.test.js (11.496 s)
+  Products - Integration Tests
+    GET /api/products - List Products
+      ├ù should return all active products (1756 ms)
+      ΓêÜ should filter products by category (555 ms)
+      ΓêÜ should search products by name (536 ms)
+      ├ù should paginate products (543 ms)
+      ├ù should not return inactive products (455 ms)
+    GET /api/products/:id - Get Product Details
+      ΓêÜ should return product details (505 ms)
+      ΓêÜ should return 404 for non-existent product (411 ms)
+      ΓêÜ should return 400 for invalid product ID (362 ms)
+    POST /api/products/prices - Bulk Price Check
+      ΓêÜ should return prices for multiple products (458 ms)
+      ΓêÜ should return empty array for empty ids (386 ms)
+      ΓêÜ should handle mix of valid and invalid IDs (450 ms)
+    Product Stock Management
+      ΓêÜ should check stock availability (568 ms)
+      ΓêÜ restaurant products should have unlimited stock (499 ms)
+    Product Ratings
+      ├ù should calculate average rating correctly (505 ms)
+    Seller-Specific Product Info
+      ΓêÜ should include seller information with products (415 ms)
+      ΓêÜ should show restaurant cuisine type (544 ms)
+    Product Caching
+      ├ù should cache product listings (471 ms)
+
+  ΓùÅ Products - Integration Tests ΓÇ║ GET /api/products - List Products ΓÇ║ should return all active products
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 3
+    Received: undefined
+
+    [0m [90m 81 |[39m       expect([33mArray[39m[33m.[39misArray(res[33m.[39mbody[33m.[39mdata))[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 82 |[39m       expect(res[33m.[39mbody[33m.[39mdata[33m.[39mlength)[33m.[39mtoBe([35m3[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 83 |[39m       expect(res[33m.[39mbody[33m.[39mtotal)[33m.[39mtoBe([35m3[39m)[33m;[39m
+     [90m    |[39m                              [31m[1m^[22m[39m
+     [90m 84 |[39m     })[33m;[39m
+     [90m 85 |[39m
+     [90m 86 |[39m     test([32m"should filter products by category"[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.toBe (tests/products.test.js:83:30)
+
+  ΓùÅ Products - Integration Tests ΓÇ║ GET /api/products - List Products ΓÇ║ should paginate products
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: undefined
+
+    [0m [90m 105 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m 106 |[39m       expect(res[33m.[39mbody[33m.[39mdata[33m.[39mlength)[33m.[39mtoBe([35m2[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 107 |[39m       expect(res[33m.[39mbody[33m.[39mpage)[33m.[39mtoBe([35m1[39m)[33m;[39m
+     [90m     |[39m                             [31m[1m^[22m[39m
+     [90m 108 |[39m       expect(res[33m.[39mbody[33m.[39mlimit)[33m.[39mtoBe([35m2[39m)[33m;[39m
+     [90m 109 |[39m     })[33m;[39m
+     [90m 110 |[39m[0m
+
+      at Object.toBe (tests/products.test.js:107:29)
+
+  ΓùÅ Products - Integration Tests ΓÇ║ GET /api/products - List Products ΓÇ║ should not return inactive products
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 3
+
+    [0m [90m 118 |[39m
+     [90m 119 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 120 |[39m       expect(res[33m.[39mbody[33m.[39mdata[33m.[39mlength)[33m.[39mtoBe([35m2[39m)[33m;[39m
+     [90m     |[39m                                    [31m[1m^[22m[39m
+     [90m 121 |[39m       expect(res[33m.[39mbody[33m.[39mdata[33m.[39mevery((p) [33m=>[39m p[33m.[39mstatus [33m===[39m 
+[32m"active"[39m))[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 122 |[39m     })[33m;[39m
+     [90m 123 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (tests/products.test.js:120:36)
+
+  ΓùÅ Products - Integration Tests ΓÇ║ Product Ratings ΓÇ║ should calculate average rating correctly
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 4.5
+    Received: undefined
+
+    [0m [90m 216 |[39m
+     [90m 217 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 218 |[39m       expect(res[33m.[39mbody[33m.[39mrating)[33m.[39mtoBe([35m4.5[39m)[33m;[39m
+     [90m     |[39m                               [31m[1m^[22m[39m
+     [90m 219 |[39m       expect(res[33m.[39mbody[33m.[39mrating_count)[33m.[39mtoBe([35m10[39m)[33m;[39m
+     [90m 220 |[39m     })[33m;[39m
+     [90m 221 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (tests/products.test.js:218:31)
+
+  ΓùÅ Products - Integration Tests ΓÇ║ Product Caching ΓÇ║ should cache product listings
+
+    expect(received).toBeDefined()
+
+    Received: undefined
+
+    [0m [90m 247 |[39m       expect(res2[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m 248 |[39m       [90m// Cache headers should be present[39m
+    [31m[1m>[22m[39m[90m 249 |[39m       expect(res2[33m.[39mheaders[[32m"x-cache"[39m])[33m.[39mtoBeDefined()[33m;[39m
+     [90m     |[39m                                       [31m[1m^[22m[39m
+     [90m 250 |[39m     })[33m;[39m
+     [90m 251 |[39m   })[33m;[39m
+     [90m 252 |[39m })[33m;[39m[0m
+
+      at Object.toBeDefined (tests/products.test.js:249:39)
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:47 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:24:47 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ≡ƒ¢á∩╕Å  run anywhere with `dotenvx run -- yourcommand`
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:47 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:24:47 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:24:47 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+FAIL tests/cart.test.js (9.246 s)
+  Cart - Integration Tests
+    GET /api/cart/:uid - Get Cart
+      ΓêÜ should return empty cart for new user (1745 ms)
+      ΓêÜ should return cart items for existing cart (576 ms)
+    PUT /api/cart/:uid - Update Cart
+      ├ù should add items to cart (504 ms)
+      ΓêÜ should update existing cart (575 ms)
+      ΓêÜ should clear cart with empty items array (571 ms)
+      ΓêÜ should fail with invalid items format (430 ms)
+      ΓêÜ should fail with missing items field (435 ms)
+    Cart Item Validation
+      ΓêÜ should handle multiple items from different sellers (683 ms)
+      ΓêÜ should maintain cart item order (527 ms)
+    Cart Calculations
+      ΓêÜ should calculate correct cart total (524 ms)
+    Cart Persistence
+      ΓêÜ cart should persist across sessions (608 ms)
+
+  ΓùÅ Cart - Integration Tests ΓÇ║ PUT /api/cart/:uid - Update Cart ΓÇ║ should add items to cart
+
+    TypeError: expect(received).toMatch(expected)
+
+    Matcher error: received value must be a string
+
+    Received has value: undefined
+
+    [0m [90m 115 |[39m
+     [90m 116 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 117 |[39m       expect(res[33m.[39mbody[33m.[39mmessage)[33m.[39mtoMatch([35m/cart.*updated/i[39m)[33m;[39m
+     [90m     |[39m                                [31m[1m^[22m[39m
+     [90m 118 |[39m
+     [90m 119 |[39m       [36mconst[39m cart [33m=[39m [36mawait[39m [33mCart[39m[33m.[39mfindOne({ user_id[33m:[39m testClient[33m.[39mfirebase_uid 
+})[33m;[39m
+     [90m 120 |[39m       expect(cart[33m.[39mitems[33m.[39mlength)[33m.[39mtoBe([35m2[39m)[33m;[39m[0m
+
+      at Object.toMatch (tests/cart.test.js:117:32)
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ≡ƒôí observe env with Radar: https://dotenvx.com/radar
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:56 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:24:56 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ≡ƒöÉ encrypt with Dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:24:56 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:24:56 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:24:56 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.07KB ΓåÆ 0.32KB (saved -362.9%)
+
+      at log (routes/uploads.js:38:15)
+
+2025-11-10 18:24:58 [[31merror[39m]: Multipart: Boundary not found {"stack":"Error: Multipart: Boundary not found\n    at new Multipart (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\busboy\\lib\\types\\multipart.js:233:13)\n    at getInstance (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\busboy\\lib\\index.js:33:12)\n    at module.exports (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\busboy\\lib\\index.js:56:10)\n    at multerMiddleware (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\multer\\lib\\make-middleware.js:28:16)\n    at Layer.handle [as handle_request] (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:284:15\n    at Function.process_params (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at Function.handle (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:175:3)\n    at router (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:47:12)\n    at Layer.handle [as handle_request] (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at next (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\app.js:221:18)\n    at Layer.handle [as handle_request] (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at urlencodedParser (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\body-parser\\lib\\types\\urlencoded.js:103:7)\n    at Layer.handle [as handle_request] (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at jsonParser (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\body-parser\\lib\\types\\json.js:122:7)\n    at Layer.handle [as handle_request] (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at trim_prefix (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:328:13)\n    at C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:286:9\n    at Function.process_params (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express\\lib\\router\\index.js:280:10)\n    at C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express-rate-limit\\dist\\index.cjs:807:7\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\express-rate-limit\\dist\\index.cjs:691:5","url":"/api/uploads","method":"POST","ip":"::ffff:127.0.0.1"}
+2025-11-10 18:24:59 [[31merror[39m]: File too large {"stack":"MulterError: File too large\n    at abortWithCode (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\multer\\lib\\make-middleware.js:73:22)\n    at FileStream.<anonymous> (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\multer\\lib\\make-middleware.js:136:11)\n    at FileStream.emit (node:events:514:28)\n    at SBMH.ssCb [as _cb] (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\busboy\\lib\\types\\multipart.js:479:32)\n    at feed (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\streamsearch\\lib\\sbmh.js:248:10)\n    at SBMH.push (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\streamsearch\\lib\\sbmh.js:104:16)\n    at Multipart._write (C:\\Users\\asus\\Documents\\EasyApp\\Backend\\node_modules\\busboy\\lib\\types\\multipart.js:567:19)\n    at writeOrBuffer (node:internal/streams/writable:556:12)\n    at _write (node:internal/streams/writable:490:10)\n    at Multipart.Writable.write (node:internal/streams/writable:494:10)\n    at IncomingMessage.ondata (node:internal/streams/readable:985:22)\n    at IncomingMessage.emit (node:events:514:28)\n    at addChunk (node:internal/streams/readable:545:12)\n    at readableAddChunkPushByteMode (node:internal/streams/readable:495:3)\n    at IncomingMessage.Readable.push (node:internal/streams/readable:375:5)\n    at HTTPParser.parserOnBody (node:_http_common:131:24)\n    at HTTPParser.callbackTrampoline (node:internal/async_hooks:130:17)","url":"/api/uploads","method":"POST","ip":"::ffff:127.0.0.1"}
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.07KB ΓåÆ 0.32KB (saved -362.9%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.error
+    Image optimization error: Error: Input buffer contains unsupported image format
+        at Sharp.toBuffer (C:\Users\asus\Documents\EasyApp\node_modules\sharp\lib\output.js:163:17)
+        at toBuffer (C:\Users\asus\Documents\EasyApp\Backend\middleware\imageOptimization.js:72:32)
+        at optimizeImage (C:\Users\asus\Documents\EasyApp\Backend\routes\uploads.js:28:27)
+        at Layer.handle [as handle_request] (C:\Users\asus\Documents\EasyApp\Backend\node_modules\express\lib\router\layer.js:95:5)
+        at next (C:\Users\asus\Documents\EasyApp\Backend\node_modules\express\lib\router\route.js:149:13)
+        at done (C:\Users\asus\Documents\EasyApp\Backend\node_modules\multer\lib\make-middleware.js:47:7)
+        at indicateDone (C:\Users\asus\Documents\EasyApp\Backend\node_modules\multer\lib\make-middleware.js:51:68)
+        at Multipart.<anonymous> (C:\Users\asus\Documents\EasyApp\Backend\node_modules\multer\lib\make-middleware.js:168:7)
+        at Multipart.emit (node:events:514:28)
+        at emitCloseNT (node:internal/streams/destroy:132:10)
+        at processTicksAndRejections (node:internal/process/task_queues:81:21)
+
+    [0m [90m 72 |[39m     [36mreturn[39m [36mawait[39m sharpInstance[33m.[39mtoBuffer()[33m;[39m
+     [90m 73 |[39m   } [36mcatch[39m (error) {
+    [31m[1m>[22m[39m[90m 74 |[39m     console[33m.[39merror([32m"Image optimization error:"[39m[33m,[39m error)[33m;[39m
+     [90m    |[39m             [31m[1m^[22m[39m
+     [90m 75 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m"Failed to optimize image"[39m)[33m;[39m
+     [90m 76 |[39m   }
+     [90m 77 |[39m }[0m
+
+      at error (middleware/imageOptimization.js:74:13)
+      at routes/uploads.js:28:21
+
+  console.error
+    Image optimization failed, using original: Error: Failed to optimize image
+        at optimizeImage (C:\Users\asus\Documents\EasyApp\Backend\middleware\imageOptimization.js:75:11)
+        at C:\Users\asus\Documents\EasyApp\Backend\routes\uploads.js:28:21
+
+    [0m [90m 42 |[39m       )[33m;[39m
+     [90m 43 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 44 |[39m       console[33m.[39merror([32m"Image optimization failed, using original:"[39m[33m,[39m err)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 45 |[39m       [90m// Continue with original if optimization fails[39m
+     [90m 46 |[39m     }
+     [90m 47 |[39m[0m
+
+      at error (routes/uploads.js:44:15)
+
+  console.log
+    ≡ƒô╕ Image optimized: 0.28KB ΓåÆ 0.31KB (saved -12.2%)
+
+      at log (routes/uploads.js:38:15)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+FAIL tests/uploads.test.js (7.898 s)
+  Image Upload & CDN - Integration Tests
+    POST /api/uploads - Upload Image
+      ├ù should upload valid JPEG image (1252 ms)
+      ΓêÜ should upload valid PNG image (531 ms)
+      ├ù should reject file without image (50 ms)
+      ΓêÜ should reject unsupported file type (51 ms)
+      ├ù should reject oversized files (62 ms)
+    GET /api/uploads/:id - Retrieve Image
+      ├ù should retrieve uploaded image (371 ms)
+      ΓêÜ should return 404 for non-existent file (389 ms)
+      ΓêÜ should return 400 for invalid file ID (345 ms)
+      ├ù should set cache headers on image response (342 ms)
+    CDN URL Generation
+      ΓêÜ should generate CDN URL when CDN is enabled (353 ms)
+      ├ù should generate local URL when CDN is disabled (342 ms)
+    Image Optimization
+      ├ù should optimize JPEG images (344 ms)
+      ΓêÜ should handle PNG to WebP conversion if supported (340 ms)
+    GridFS Storage
+      ├ù should store file metadata in GridFS (383 ms)
+      ├ù should clean up failed uploads (358 ms)
+    CORS Headers
+      ├ù should include CORS headers on image responses (344 ms)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ POST /api/uploads - Upload Image ΓÇ║ should upload valid JPEG image
+
+    expect(received).toBeDefined()
+
+    Received: undefined
+
+    [0m [90m 48 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m 49 |[39m       expect(res[33m.[39mbody[33m.[39murl)[33m.[39mtoBeDefined()[33m;[39m
+    [31m[1m>[22m[39m[90m 50 |[39m       expect(res[33m.[39mbody[33m.[39mfileId)[33m.[39mtoBeDefined()[33m;[39m
+     [90m    |[39m                               [31m[1m^[22m[39m
+     [90m 51 |[39m
+     [90m 52 |[39m       [90m// Verify file is in GridFS[39m
+     [90m 53 |[39m       [36mconst[39m files [33m=[39m [36mawait[39m bucket[33m.[39mfind({})[33m.[39mtoArray()[33m;[39m[0m
+
+      at Object.toBeDefined (tests/uploads.test.js:50:31)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ POST /api/uploads - Upload Image ΓÇ║ should reject file without image
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+    [0m [90m 76 |[39m         [33m.[39m[36mset[39m([32m"Content-Type"[39m[33m,[39m [32m"multipart/form-data"[39m)[33m;[39m
+     [90m 77 |[39m
+    [31m[1m>[22m[39m[90m 78 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m
+     [90m    |[39m                          [31m[1m^[22m[39m
+     [90m 79 |[39m       expect(res[33m.[39mbody[33m.[39merror)[33m.[39mtoMatch([35m/file.*required/i[39m)[33m;[39m
+     [90m 80 |[39m     })[33m;[39m
+     [90m 81 |[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:78:26)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ POST /api/uploads - Upload Image ΓÇ║ should reject oversized files
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 413
+    Received: 500
+
+    [0m [90m 101 |[39m         [33m.[39m[36mset[39m([32m"Content-Type"[39m[33m,[39m [32m"multipart/form-data"[39m)[33m;[39m
+     [90m 102 |[39m
+    [31m[1m>[22m[39m[90m 103 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m413[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 104 |[39m     })[33m;[39m
+     [90m 105 |[39m   })[33m;[39m
+     [90m 106 |[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:103:26)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ GET /api/uploads/:id - Retrieve Image ΓÇ║ should retrieve uploaded image
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 124 |[39m       [36mconst[39m res [33m=[39m [36mawait[39m 
+request(app)[33m.[39m[36mget[39m([32m`/api/uploads/${uploadedFileId}`[39m)[33m;[39m
+     [90m 125 |[39m
+    [31m[1m>[22m[39m[90m 126 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 127 |[39m       expect(res[33m.[39mheaders[[32m"content-type"[39m])[33m.[39mtoMatch([35m/image/[39m)[33m;[39m
+     [90m 128 |[39m     })[33m;[39m
+     [90m 129 |[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:126:26)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ GET /api/uploads/:id - Retrieve Image ΓÇ║ should set cache headers on image response
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 145 |[39m       [36mconst[39m res [33m=[39m [36mawait[39m 
+request(app)[33m.[39m[36mget[39m([32m`/api/uploads/${uploadedFileId}`[39m)[33m;[39m
+     [90m 146 |[39m
+    [31m[1m>[22m[39m[90m 147 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m     |[39m                          [31m[1m^[22m[39m
+     [90m 148 |[39m       expect(res[33m.[39mheaders[[32m"cache-control"[39m])[33m.[39mtoBeDefined()[33m;[39m
+     [90m 149 |[39m       expect(res[33m.[39mheaders[[32m"cache-control"[39m])[33m.[39mtoMatch([35m/max-age/[39m)[33m;[39m
+     [90m 150 |[39m     })[33m;[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:147:26)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ CDN URL Generation ΓÇ║ should generate local URL when CDN is disabled
+
+    expect(received).not.toContain(expected) // indexOf
+
+    Expected substring: not "cdn.eforeasy.in"
+    Received string:        "https://cdn.eforeasy.in/api/uploads/6911e0a4b164c4331f4e7464"
+
+    [0m [90m 194 |[39m       expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m 195 |[39m       expect(res[33m.[39mbody[33m.[39murl)[33m.[39mtoContain([32m"/api/uploads/"[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 196 |[39m       expect(res[33m.[39mbody[33m.[39murl)[33m.[39mnot[33m.[39mtoContain([32m"cdn.eforeasy.in"[39m)[33m;[39m
+     [90m     |[39m                                [31m[1m^[22m[39m
+     [90m 197 |[39m
+     [90m 198 |[39m       [90m// Restore env variable[39m
+     [90m 199 |[39m       process[33m.[39menv[33m.[39m[33mCDN_PROVIDER[39m [33m=[39m originalProvider[33m;[39m[0m
+
+      at Object.toContain (tests/uploads.test.js:196:32)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ Image Optimization ΓÇ║ should optimize JPEG images
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 217 |[39m       [36mconst[39m getRes [33m=[39m [36mawait[39m 
+request(app)[33m.[39m[36mget[39m([32m`/api/uploads/${res.body.fileId}`[39m)[33m;[39m
+     [90m 218 |[39m
+    [31m[1m>[22m[39m[90m 219 |[39m       expect(getRes[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m     |[39m                             [31m[1m^[22m[39m
+     [90m 220 |[39m       expect(getRes[33m.[39mheaders[[32m"content-type"[39m])[33m.[39mtoBe([32m"image/jpeg"[39m)[33m;[39m
+     [90m 221 |[39m     })[33m;[39m
+     [90m 222 |[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:219:29)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ GridFS Storage ΓÇ║ should store file metadata in GridFS
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+    [0m [90m 249 |[39m       [36mconst[39m files [33m=[39m [36mawait[39m bucket[33m.[39mfind({ _id[33m:[39m [36mnew[39m 
+mongoose[33m.[39m[33mTypes[39m[33m.[39m[33mObjectId[39m(uploadRes[33m.[39mbody[33m.[39mfileId) })[33m.[39mtoArray()[33m;[39m
+     [90m 250 |[39m
+    [31m[1m>[22m[39m[90m 251 |[39m       expect(files[33m.[39mlength)[33m.[39mtoBe([35m1[39m)[33m;[39m
+     [90m     |[39m                            [31m[1m^[22m[39m
+     [90m 252 |[39m       expect(files[[35m0[39m][33m.[39mfilename)[33m.[39mtoBeDefined()[33m;[39m
+     [90m 253 |[39m       expect(files[[35m0[39m][33m.[39mcontentType)[33m.[39mtoMatch([35m/image/[39m)[33m;[39m
+     [90m 254 |[39m     })[33m;[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:251:28)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ GridFS Storage ΓÇ║ should clean up failed uploads
+
+    expect(received).not.toBe(expected) // Object.is equality
+
+    Expected: not 200
+
+    [0m [90m 264 |[39m
+     [90m 265 |[39m       [90m// Should fail[39m
+    [31m[1m>[22m[39m[90m 266 |[39m       expect(res[33m.[39mstatus)[33m.[39mnot[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m     |[39m                              [31m[1m^[22m[39m
+     [90m 267 |[39m
+     [90m 268 |[39m       [90m// Verify no orphaned files in GridFS[39m
+     [90m 269 |[39m       [36mconst[39m files [33m=[39m [36mawait[39m bucket[33m.[39mfind({})[33m.[39mtoArray()[33m;[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:266:30)
+
+  ΓùÅ Image Upload & CDN - Integration Tests ΓÇ║ CORS Headers ΓÇ║ should include CORS headers on image responses
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 400
+
+    [0m [90m 285 |[39m       [36mconst[39m getRes [33m=[39m [36mawait[39m 
+request(app)[33m.[39m[36mget[39m([32m`/api/uploads/${uploadRes.body.fileId}`[39m)[33m;[39m
+     [90m 286 |[39m
+    [31m[1m>[22m[39m[90m 287 |[39m       expect(getRes[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m
+     [90m     |[39m                             [31m[1m^[22m[39m
+     [90m 288 |[39m       expect(getRes[33m.[39mheaders[[32m"access-control-allow-origin"[39m])[33m.[39mtoBeDefined()[33m;[39m
+     [90m 289 |[39m     })[33m;[39m
+     [90m 290 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (tests/uploads.test.js:287:29)
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:25:04 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:25:04 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:25:04 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:25:04 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:25:04 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+FAIL tests/coupons.test.js (6.45 s)
+  Coupons - Integration Tests
+    Coupon Application via Quote Endpoint
+      ΓêÜ should apply valid percentage coupon correctly (1659 ms)
+      ΓêÜ should reject expired coupon (574 ms)
+      ├ù should apply coupon only when min subtotal is met (568 ms)
+      ΓêÜ should apply category-specific coupon (553 ms)
+      ΓêÜ should handle case-insensitive coupon codes (546 ms)
+    Admin Coupon Management
+      ΓêÜ should list all coupons (494 ms)
+
+  ΓùÅ Coupons - Integration Tests ΓÇ║ Coupon Application via Quote Endpoint ΓÇ║ should apply coupon only when min subtotal is met
+
+    expect(received).toBeUndefined()
+
+    Received: {"amount": -100, "categories": [], "code": "SAVE20", "percent": 20, "type": "coupon"}
+
+    [0m [90m 155 |[39m       [90m// Coupon should not apply due to min subtotal[39m
+     [90m 156 |[39m       [36mconst[39m couponAdjustment [33m=[39m res[33m.[39mbody[33m.[39madjustments[33m.[39mfind(adj [33m=>[39m adj[33m.[39mtype 
+[33m===[39m [32m"coupon"[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 157 |[39m       expect(couponAdjustment)[33m.[39mtoBeUndefined()[33m;[39m
+     [90m     |[39m                                [31m[1m^[22m[39m
+     [90m 158 |[39m     })[33m;[39m
+     [90m 159 |[39m
+     [90m 160 |[39m     test([32m"should apply category-specific coupon"[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.toBeUndefined (tests/coupons.test.js:157:32)
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:25:11 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:25:11 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ≡ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:25:11 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:25:11 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:25:11 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+PASS tests/orders.test.js (13.336 s)
+  Orders Controller - Unit Tests
+    POST /api/orders - Create Order
+      ΓêÜ should create order successfully with valid data (2625 ms)
+      ΓêÜ should fail when product does not exist (988 ms)
+      ΓêÜ should fail when product is not available (998 ms)
+      ΓêÜ should fail when stock is insufficient (963 ms)
+      ΓêÜ should apply valid coupon correctly (1550 ms)
+      ΓêÜ should fail when coupon is invalid (1094 ms)
+      ΓêÜ should fail when coupon usage limit reached (1127 ms)
+      ΓêÜ should fail when user already used coupon (max uses per user) (1131 ms)
+      ΓêÜ should fail without authentication (881 ms)
+
+  console.log
+    [dotenv@17.2.2] injecting env (18) from .env -- tip: ΓÜÖ∩╕Å  write to custom object with { processEnv: myObject }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:25:24 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized from detected service account file: easy-grocery-521d5-firebase-adminsdk-fbsvc-8df3f201df.json
+2025-11-10 18:25:24 [[32minfo[39m]: ≡ƒöÉ Firebase Admin initialized
+  console.log
+    [dotenv@17.2.2] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+2025-11-10 18:25:25 [[32minfo[39m]: Redis: Connecting...
+2025-11-10 18:25:25 [[32minfo[39m]: Redis: Connected and ready
+2025-11-10 18:25:25 [[32minfo[39m]: Γ£à Redis caching enabled
+  console.log
+    Γ£à Connected to MongoDB Atlas test database
+
+      at log (tests/testUtils/dbHandler.js:26:11)
+
+  console.log
+    Γ£à Test database dropped
+
+      at log (tests/testUtils/dbHandler.js:37:15)
+
+  console.log
+    Γ£à Test database connection closed
+
+      at log (tests/testUtils/dbHandler.js:41:15)
+
+PASS tests/auth.test.js (12.342 s)
+  Authentication - Integration Tests
+    POST /api/admin/login - Admin Login
+      ΓêÜ should login successfully with valid credentials (2014 ms)
+      ΓêÜ should fail with invalid email (838 ms)
+      ΓêÜ should fail with invalid password (907 ms)
+      ΓêÜ should fail with missing credentials (797 ms)
+    POST /api/auth/login/seller - Seller Login
+      ΓêÜ should login successfully with valid credentials (911 ms)
+      ΓêÜ should fail with invalid email (839 ms)
+      ΓêÜ should fail with invalid password (899 ms)
+    POST /api/auth/signup/seller - Seller Registration
+      ΓêÜ should register new seller successfully (781 ms)
+      ΓêÜ should fail with duplicate email (838 ms)
+      ΓêÜ should fail with missing required fields (739 ms)
+      ΓêÜ should fail with invalid email format (736 ms)
+
+FAIL tests/integration/end-to-end-order.test.js
+  ΓùÅ Test suite failed to run
+
+    Cannot find module '../app' from 'tests/integration/end-to-end-order.test.js'
+
+    [0m [90m 1 |[39m [36mconst[39m request [33m=[39m require([32m"supertest"[39m)[33m;[39m
+     [90m 2 |[39m [36mconst[39m mongoose [33m=[39m require([32m"mongoose"[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 3 |[39m [36mconst[39m app [33m=[39m require([32m"../app"[39m)[33m;[39m
+     [90m   |[39m             [31m[1m^[22m[39m
+     [90m 4 |[39m [36mconst[39m {
+     [90m 5 |[39m   [33mOrder[39m[33m,[39m
+     [90m 6 |[39m   [33mProduct[39m[33m,[39m[0m
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:863:11)
+      at Object.require (tests/integration/end-to-end-order.test.js:3:13)
+
+-------------------------|---------|----------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+-------------------------|---------|----------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+All files                |    20.5 |    14.53 |   19.38 |   21.14 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+ controllers             |   33.68 |    30.89 |   29.78 |    34.4 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+  clientsController.js   |    2.24 |        0 |       0 |    2.43 | 6-221                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+  ordersController.js    |   38.54 |    34.89 |   32.55 |   39.22 | 21-153,168,204-219,237-268,297,344-363,384-425,487,510,559-564,575-667,691,711-718,796,813-815,857-858,969-1324,1339-1340,1373                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+ middleware              |   32.96 |    17.92 |   37.03 |   33.33 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+  cache.js               |   47.76 |       25 |   46.66 |   47.76 | 18-22,29-34,47-48,55-65,84,111,119-168                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+  cdn.js                 |   21.42 |    29.26 |   21.42 |   21.81 | 37,56,67-193                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+  couponValidation.js    |       0 |        0 |       0 |       0 | 1-214                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+  imageOptimization.js   |   22.53 |     5.35 |   14.28 |   22.53 | 52-66,86-230                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+  pagination.js          |   77.77 |    46.66 |      75 |   77.77 | 78-82                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+  validation.js          |   93.47 |    72.72 |     100 |   97.67 | 226                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+  verifyFirebaseToken.js |    7.31 |        0 |       0 |    7.31 | 16-132                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+ routes                  |   15.88 |     8.43 |    13.5 |   16.56 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+  admin.js               |    7.67 |     1.44 |       3 |    8.13 | 14,70-72,136-138,166-167,173-309,315-422,428-486,492-573,578-593,598-611,617-715,721-768,773-786,793-803,812-862,871-934,943-944,1000-1077,1082-1093,1099-1118,1123-1221,1226-1246,1252-1261,1267-1351,1372-1380,1389-1458,1467-1468,1477-1490,1499-1577,1581-1769,1778-1876,1886-2006,2014-2025,2030-2035,2040-2061,2066-2098,2103-2123,2129-2155,2161-2266,2272-2370,2375,2378,2387-2415,2425-2498,2508-2571,2581-2614,2624-2666,2677-2702,2707-2715,2720-2740,2745-2768,2773-2834,2839-2859,2865-2880,2884-2898,2902-2915,2921-2936,2940-2948,2952-2965,2972-3061,3068-3133,3140-3155,3163-3188,3193-3215,3220-3232,3238-3251,3257-3316,3321-3343,3349-3371,3376-3393,3399-3441,3447-3481,3487-3517,3522-3537,3543-3562,3568-3581 
+  auth.js                |   18.65 |    13.14 |      20 |   20.52 | 22,33-58,122,128,141,156-157,164-194,200-225,232-281,287-349,360-398,406-440,446-452,459-494,501-575                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  cart.js                |   85.18 |    66.66 |     100 |   84.61 | 14-15,44-45                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  clients.js             |   24.32 |        0 |       0 |   29.03 | 15-26,32-61                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  delivery.js            |    4.36 |     0.21 |    3.12 |    4.57 | 23-93,99-282,288-463,469-760,764-898,904-1044,1050-1210,1216-1371,1377-1426,1432-1464,1507,1513-1514,1529-1733,1739-1769,1776-1839,1846-1955,1963-2162,2168-2217,2223-2249,2256-2442,2452-2730                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+  orders.js              |    12.5 |        0 |       0 |   13.22 | 30-132,147-165,170-264                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+  products.js            |   74.75 |    60.67 |   76.47 |   75.77 | 59-60,93-94,123-124,132-169,185,199,215,218-229,238-240,242-243,288,348-349,359,361,412-413                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+  restaurant_manage.js   |   22.58 |        0 |       0 |   25.92 | 9-14,19-25,31-57                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+  restaurants.js         |   13.46 |        0 |       0 |   15.21 | 12-100                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+  reviews.js             |   13.18 |        0 |       0 |   13.63 | 17-80,92-151,163-187,199-241,253-287,299-320                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+  seller.js              |   24.95 |     18.4 |   27.41 |   25.69 | 23-33,50-51,93-94,103,114-115,124,135-136,147,168-169,179-180,248-249,254-304,310-369,375-385,396,402,409,418,445-446,472-480,485,497-531,541-544,553,559,585,599-600,606-673,689-818,827-846,852-871,878-984,990-1017,1032-1422,1439-1546,1559-1609,1618-1646,1661-1719,1734-1835,1889-1890,1900-1937,1947-2007,2021-2111                                                                                                                                                                                                                                                                                                                                                                                                           
+  tokens.js              |   21.73 |        0 |       0 |   21.73 | 8-39                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  uploads.js             |   84.21 |    57.14 |   66.66 |   87.03 | 56-57,76-77,90-92                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+  users.js               |   14.43 |        0 |       0 |   14.58 | 7-12,17-25,31-48,54-79,85-99,105-114,120-133,139-159,165-193,202-218                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+  wishlist.js            |   17.74 |        0 |       0 |   18.03 | 15-63,75-109,121-136,148-174,186-202                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+ services                |   36.76 |    31.13 |   34.14 |   37.65 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+  geocode.js             |   15.21 |     6.89 |       0 |   17.07 | 13-70                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+  orderEvents.js         |    12.5 |    13.33 |   15.38 |   11.53 | 8-22,29-54,61-135                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+  pricing.js             |   44.77 |    29.26 |   55.55 |   43.54 | 7-56,65,76,95,119-132                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+  push.js                |   54.19 |    38.72 |      70 |   56.42 | 6-75,86-89,94-96,101,146-149,170,174-177,183,187-193,276,290-309,328-331,350-354,371-372                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+  upi.js                 |       0 |      100 |       0 |       0 | 3-8                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+-------------------------|---------|----------|---------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Test Suites: 7 failed, 2 passed, 9 total
+Tests:       38 failed, 68 passed, 106 total
+Snapshots:   0 total
+Time:        87.096 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

@@ -1,0 +1,25 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\.9412780a0ea46c74b6db6cb716b8e69518b1e869-audit.json",
+    "files": [
+        {
+            "date": 1767605470224,
+            "name": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\combined-2026-01-05.log",
+            "hash": "8ded30a33fd570af3657355e617bd597eff134203f3ee7c0c64df5320c16c893"
+        },
+        {
+            "date": 1767723852840,
+            "name": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\combined-2026-01-06.log",
+            "hash": "24ca337a4b7a24393f99a3e540e4eb70b9d2e0cb3c5dd5dc47a0650f497ac02f"
+        },
+        {
+            "date": 1767724448944,
+            "name": "C:\\Users\\asus\\Documents\\EasyApp\\Backend\\logs\\combined-2026-01-07.log",
+            "hash": "01f1d8791d94f1830cdca52883ca078c633075de91529078e30dbcceddba2f83"
+        }
+    ],
+    "hashType": "sha256"
+}
