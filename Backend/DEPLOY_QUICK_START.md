@@ -259,6 +259,24 @@ After deployment:
 - [ ] Logs show "✅ Redis caching enabled"
 - [ ] Admin login works from Flutter app
 - [ ] ALLOWED_ORIGINS updated to include new Cloud Run URL
+- [ ] Push notifications working (if getting FCM permission error, see `FCM_CLOUD_RUN_FIX.md`)
+
+---
+
+## 🔔 Push Notifications Not Working?
+
+**Error:** `messaging/mismatched-credential - Permission denied`
+
+**Quick fix (2 commands):**
+```bash
+gcloud projects add-iam-policy-binding easy-grocery-521d5 \
+  --member="serviceAccount:easy-backend@easy-grocery-521d5.iam.gserviceaccount.com" \
+  --role="roles/firebasenotifications.admin"
+
+gcloud run services update easy-backend --region=asia-south1
+```
+
+See `FCM_CLOUD_RUN_FIX.md` for complete troubleshooting.
 
 ---
 
