@@ -34,7 +34,8 @@ const logger = require("../config/logger");
 // Configuration
 const BACKUP_DIR = path.join(__dirname, "..", "backups");
 const GCS_BUCKET = "easy-grocery-backups";
-const DB_URI = process.env.DB_CONNECTION_STRING || "mongodb://127.0.0.1:27017/easy_app";
+const DB_URI =
+  process.env.DB_CONNECTION_STRING || "mongodb://127.0.0.1:27017/easy_app";
 const RETENTION_DAYS = 7; // Keep local backups for 7 days
 const MAX_BACKUPS = 14; // Maximum number of local backups to keep
 const MAX_RETRIES = parseInt(process.env.BACKUP_MAX_RETRIES || "3", 10);
@@ -65,13 +66,15 @@ async function initializeGCS() {
       try {
         // Try parsing as JSON if it's a stringified credentials object
         const credsStr = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-        if (credsStr.startsWith('{')) {
+        if (credsStr.startsWith("{")) {
           const credentials = JSON.parse(credsStr);
           // Use the parsed credentials directly, don't set keyFilename
           storageConfig.credentials = credentials;
           // Explicitly don't use keyFilename to avoid file path lookups
           storageConfig.keyFilename = undefined;
-          logger.debug("Using credentials from GOOGLE_APPLICATION_CREDENTIALS env var");
+          logger.debug(
+            "Using credentials from GOOGLE_APPLICATION_CREDENTIALS env var"
+          );
         }
       } catch (e) {
         logger.warn(
@@ -85,18 +88,22 @@ async function initializeGCS() {
     storage = new Storage(storageConfig);
 
     bucket = storage.bucket(GCS_BUCKET);
-    
+
     // Test connection
     const [exists] = await bucket.exists();
     if (!exists) {
-      logger.warn(`⚠️  GCS bucket ${GCS_BUCKET} not found. Backups will only be stored locally.`);
+      logger.warn(
+        `⚠️  GCS bucket ${GCS_BUCKET} not found. Backups will only be stored locally.`
+      );
       return false;
     }
 
     logger.info(`✅ Connected to GCS bucket: ${GCS_BUCKET}`);
     return true;
   } catch (error) {
-    logger.warn(`⚠️  GCS initialization failed: ${error.message}. Backups will only be stored locally.`);
+    logger.warn(
+      `⚠️  GCS initialization failed: ${error.message}. Backups will only be stored locally.`
+    );
     storage = null;
     bucket = null;
     return false;
@@ -145,19 +152,25 @@ async function checkMongoDumpInstalled() {
 // Execute shell command with promise and timeout
 function execCommand(command, timeoutMs = 600000) {
   return new Promise((resolve, reject) => {
-    const child = exec(command, { shell: '/bin/bash', timeout: timeoutMs }, (error, stdout, stderr) => {
-      if (error) {
-        const fullError = new Error(`${error.message}\n${stderr || ''}`);
-        fullError.stderr = stderr;
-        fullError.code = error.code;
-        reject(fullError);
-        return;
+    // Use appropriate shell for the platform
+    const shellOption = process.platform === "win32" ? true : "/bin/bash";
+    const child = exec(
+      command,
+      { shell: shellOption, timeout: timeoutMs },
+      (error, stdout, stderr) => {
+        if (error) {
+          const fullError = new Error(`${error.message}\n${stderr || ""}`);
+          fullError.stderr = stderr;
+          fullError.code = error.code;
+          reject(fullError);
+          return;
+        }
+        resolve({ stdout, stderr });
       }
-      resolve({ stdout, stderr });
-    });
+    );
     // Log any real-time output for debugging
     if (child.stderr) {
-      child.stderr.on('data', (data) => {
+      child.stderr.on("data", (data) => {
         logger.debug(`mongodump: ${data}`);
       });
     }
@@ -170,7 +183,8 @@ function sleep(ms) {
 
 // Append connection options to URI for timeouts
 function withExtraUriOptions(uri) {
-  const extra = "connectTimeoutMS=20000&socketTimeoutMS=600000&serverSelectionTimeoutMS=20000";
+  const extra =
+    "connectTimeoutMS=20000&socketTimeoutMS=600000&serverSelectionTimeoutMS=20000";
   return uri.includes("?") ? `${uri}&${extra}` : `${uri}?${extra}`;
 }
 
@@ -221,10 +235,10 @@ async function uploadToGCS(backupName, backupPath) {
 
   try {
     logger.info(`📤 Uploading backup to GCS: ${backupName}`);
-    
+
     // Create a parent directory object in GCS
     const gcsPath = `backups/${backupName}/`;
-    
+
     // Upload all files in the backup directory
     const files = await getFilesRecursive(backupPath);
     let uploadCount = 0;
@@ -232,14 +246,14 @@ async function uploadToGCS(backupName, backupPath) {
     for (const file of files) {
       const relativePath = path.relative(backupPath, file);
       const gcsBlobPath = `${gcsPath}${relativePath}`;
-      
+
       await bucket.upload(file, {
         destination: gcsBlobPath,
         metadata: {
-          contentType: 'application/octet-stream',
+          contentType: "application/octet-stream",
           metadata: {
-            'backup-name': backupName,
-            'created-date': new Date().toISOString(),
+            "backup-name": backupName,
+            "created-date": new Date().toISOString(),
           },
         },
       });
@@ -247,9 +261,11 @@ async function uploadToGCS(backupName, backupPath) {
     }
 
     const backupSize = getDirectorySize(backupPath);
-    logger.info(`✅ Uploaded ${uploadCount} files to GCS (${formatBytes(backupSize)})`);
+    logger.info(
+      `✅ Uploaded ${uploadCount} files to GCS (${formatBytes(backupSize)})`
+    );
     logger.info(`   GCS Path: gs://${GCS_BUCKET}/${gcsPath}`);
-    
+
     return {
       gcsPath,
       uploadCount,
@@ -289,25 +305,25 @@ async function createBackup() {
     const isInstalled = await checkMongoDumpInstalled();
     if (!isInstalled) {
       const errorMsg = `
-❌ MongoDB Database Tools not installed!
+⚠️  MongoDB Database Tools not installed - Backups disabled
 
-To use automatic backups, you need to install mongodump:
+To enable automatic backups, install mongodump:
 
 Windows:
 1. Download from: https://www.mongodb.com/try/download/database-tools
-2. Extract the zip file
-3. Add the bin folder to your PATH environment variable
-4. Restart terminal and verify: mongodump --version
+2. Extract and add to PATH
+3. Verify: mongodump --version
 
 Linux/Mac:
 brew install mongodb-database-tools
 OR
 sudo apt-get install mongodb-database-tools
 
-Until mongodump is installed, automatic backups are DISABLED.
+Backups are optional for development. Production should have this configured.
 `;
-      logger.error(errorMsg);
-      throw new Error("mongodump not installed - see installation instructions above");
+      logger.warn(errorMsg);
+      // Return success:false instead of throwing - makes backups optional
+      return { success: false, reason: "mongodump not installed" };
     }
 
     ensureBackupDir();
@@ -324,7 +340,8 @@ Until mongodump is installed, automatic backups are DISABLED.
     await runDumpWithRetries(command);
 
     // Check if backup was successful
-    const backupSuccess = fs.existsSync(backupPath) && fs.readdirSync(backupPath).length > 0;
+    const backupSuccess =
+      fs.existsSync(backupPath) && fs.readdirSync(backupPath).length > 0;
 
     if (backupSuccess) {
       const backupSize = getDirectorySize(backupPath);
@@ -401,7 +418,9 @@ async function cleanupOldBackups() {
 
         let created = stats.mtime || stats.birthtime || new Date();
         try {
-          const match = name.match(/(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/);
+          const match = name.match(
+            /(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/
+          );
           if (match) {
             const [, year, month, day, hour, minute, second] = match;
             created = new Date(
@@ -431,10 +450,16 @@ async function cleanupOldBackups() {
       if (ageDays > RETENTION_DAYS || i >= MAX_BACKUPS) {
         try {
           fs.rmSync(backup.path, { recursive: true, force: true });
-          logger.info(`Deleting old backup: ${backup.name} (${ageDays.toFixed(1)} days old)`);
+          logger.info(
+            `Deleting old backup: ${backup.name} (${ageDays.toFixed(
+              1
+            )} days old)`
+          );
           deletedCount++;
         } catch (error) {
-          logger.warn(`Failed to delete backup ${backup.name}: ${error.message}`);
+          logger.warn(
+            `Failed to delete backup ${backup.name}: ${error.message}`
+          );
         }
       }
     }
@@ -456,7 +481,7 @@ async function listBackups() {
       return;
     }
 
-    const [files] = await bucket.getFiles({ prefix: 'backups/' });
+    const [files] = await bucket.getFiles({ prefix: "backups/" });
 
     if (files.length === 0) {
       console.log("📦 No backups found in GCS");
@@ -465,7 +490,7 @@ async function listBackups() {
 
     // Group files by backup
     const backups = {};
-    files.forEach(file => {
+    files.forEach((file) => {
       const match = file.name.match(/^backups\/([^\/]+)\//);
       if (match) {
         const backupName = match[1];
@@ -485,9 +510,12 @@ async function listBackups() {
 
     Object.values(backups)
       .sort((a, b) => new Date(b.created) - new Date(a.created))
-      .forEach(backup => {
+      .forEach((backup) => {
         const date = new Date(backup.created).toLocaleString();
-        const size = backup.files.reduce((sum, f) => sum + parseInt(f.metadata.size || 0), 0);
+        const size = backup.files.reduce(
+          (sum, f) => sum + parseInt(f.metadata.size || 0),
+          0
+        );
         console.log(`✅ ${backup.name}`);
         console.log(`   Created: ${date}`);
         console.log(`   Files: ${backup.files.length}`);
@@ -503,10 +531,10 @@ async function listBackups() {
 async function main() {
   const args = process.argv.slice(2);
 
-  if (args[0] === '--list') {
+  if (args[0] === "--list") {
     await initializeGCS();
     await listBackups();
-  } else if (args[0] === '--restore' && args[1]) {
+  } else if (args[0] === "--restore" && args[1]) {
     logger.info(`Restore functionality coming soon for: ${args[1]}`);
     // TODO: Implement restore from GCS
   } else {
@@ -525,7 +553,7 @@ async function main() {
   }
 }
 
-main().catch(error => {
+main().catch((error) => {
   logger.error(`Fatal error: ${error.message}`);
   process.exit(1);
 });

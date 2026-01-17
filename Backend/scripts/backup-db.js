@@ -87,9 +87,9 @@ async function createBackup() {
     const isInstalled = await checkMongoDumpInstalled();
     if (!isInstalled) {
       const errorMsg = `
-❌ MongoDB Database Tools not installed!
+⚠️ MongoDB Database Tools not installed - Backups disabled
 
-To use automatic backups, you need to install mongodump:
+To enable automatic backups, install mongodump:
 
 Windows:
 1. Download from: https://www.mongodb.com/try/download/database-tools
@@ -107,13 +107,11 @@ brew install mongodb-database-tools
 OR
 sudo apt-get install mongodb-database-tools
 
-Until mongodump is installed, automatic backups are DISABLED.
-You can still backup manually using MongoDB Compass or Atlas.
+Backups are optional for development. Production servers should have this configured.
 `;
-      logger.error(errorMsg);
-      throw new Error(
-        "mongodump not installed - see installation instructions above"
-      );
+      logger.warn(errorMsg);
+      // Return null instead of throwing - makes backups optional
+      return { success: false, reason: "mongodump not installed" };
     }
 
     ensureBackupDir();

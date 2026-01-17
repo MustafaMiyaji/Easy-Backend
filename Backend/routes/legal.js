@@ -115,9 +115,9 @@ router.get("/privacy-policy", (req, res) => {
     <ul>
         <li>Using the "Delete Account" option in app settings</li>
         <li>Visiting: <a href="${
-          process.env.BASE_URL || "https://easy-backend-785621869568.asia-south1.run.app"
+          process.env.BASE_URL || "http://localhost:3000"
         }/legal/delete-account">${
-    process.env.BASE_URL || "https://easy-backend-785621869568.asia-south1.run.app"
+    process.env.BASE_URL || "http://localhost:3000"
   }/legal/delete-account</a></li>
         <li>Contacting support at: support@easyapp.com</li>
     </ul>
@@ -254,7 +254,7 @@ router.get("/delete-account", (req, res) => {
             <h3>Option 3: API Endpoint (For Developers)</h3>
             <p>Send a DELETE request to:</p>
             <code>DELETE ${
-              process.env.BASE_URL || "https://easy-backend-785621869568.asia-south1.run.app"
+              process.env.BASE_URL || "http://localhost:3000"
             }/api/users/:uid/account</code>
             <p>Requires Firebase authentication token in headers.</p>
         </div>

@@ -48,6 +48,7 @@ const deliveryRouter = require("./routes/delivery");
 const uploadsRouter = require("./routes/uploads");
 const reviewsRouter = require("./routes/reviews");
 const wishlistRouter = require("./routes/wishlist");
+const legalRouter = require("./routes/legal");
 
 const app = express();
 
@@ -309,6 +310,7 @@ app.use("/api/delivery", deliveryRouter);
 app.use("/api/uploads", uploadsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/wishlist", wishlistRouter);
+app.use("/legal", legalRouter);
 
 // ========================================
 // APP VERSION ENDPOINT
@@ -335,11 +337,22 @@ app.post("/api/admin/backup-now", async (req, res) => {
     logger.info("📦 Manual backup triggered via API");
     // Use GCS-enabled backup script so daily backups are uploaded to Cloud Storage
     const { createBackup } = require("./scripts/backup-db-gcs");
-    const backupName = await createBackup();
+    const result = await createBackup();
+
+    // Check if backup was successful
+    if (result && result.success === false) {
+      return res.status(400).json({
+        success: false,
+        error: result.reason || "Backup tools not available",
+        message: "Install mongodump to enable backups",
+      });
+    }
+
     res.json({
       success: true,
       message: "Backup completed successfully",
-      backupName,
+      backupName: result.backupName,
+      gcs: result.gcs || null,
     });
   } catch (error) {
     logger.error("Manual backup failed:", error.message);
@@ -407,23 +420,27 @@ async function start() {
   // This allows server to start even if MongoDB is temporarily unavailable
   const connectMongoDB = async () => {
     try {
-      await mongoose.connect(uri, { 
-        serverSelectionTimeoutMS: 10000,  // 10 second timeout for server selection
-        connectTimeoutMS: 10000            // 10 second connection timeout
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 10000, // 10 second timeout for server selection
+        connectTimeoutMS: 10000, // 10 second connection timeout
       });
       logger.info("✅ Connected to MongoDB");
     } catch (mongoErr) {
-      logger.warn("⚠️ MongoDB connection failed (will retry):", mongoErr.message);
+      logger.warn(
+        "⚠️ MongoDB connection failed (will retry):",
+        mongoErr.message
+      );
       // Retry after 5 seconds
       setTimeout(connectMongoDB, 5000);
     }
   };
-  
+
   // Start connection attempt without waiting (non-blocking)
-  connectMongoDB().catch(err => logger.error("MongoDB background connection error:", err));
+  connectMongoDB().catch((err) =>
+    logger.error("MongoDB background connection error:", err)
+  );
 
   try {
-
     // Start cron job for checking order assignment timeouts (runs every 5 minutes)
     // Increased interval to prevent overlapping executions and reduce database load
     let cronJobRunning = false; // Prevent overlapping executions
@@ -505,6 +522,13 @@ async function start() {
       try {
         logger.info("🗄️  Starting automated daily database backup to GCS...");
         const result = await createBackup();
+
+        // Check if backup was successful
+        if (result && result.success === false) {
+          logger.warn(`⚠️  Backup skipped: ${result.reason}`);
+          return;
+        }
+
         logger.info(`✅ Automated backup completed: ${result.backupName}`);
         if (result.gcs) {
           logger.info(
@@ -512,8 +536,7 @@ async function start() {
           );
         }
       } catch (error) {
-        logger.error("❌ Automated backup failed:", error);
-        logger.error("❌ Backup error stack:", error.stack);
+        logger.error("❌ Automated backup failed:", error.message);
         // Send alert notification here if needed (email/SMS)
       }
     });
