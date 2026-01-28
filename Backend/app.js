@@ -82,19 +82,27 @@ app.use(
 
 // 2. CORS - Restricted Origins
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
+  ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim())
   : [
       "http://localhost:3000",
       "http://192.168.1.76:3000",
       "https://easy-backend-785621869568.asia-south1.run.app",
     ];
 
+// Add CDN domain to allowed origins if configured
+if (process.env.CDN_DOMAIN && !allowedOrigins.includes(process.env.CDN_DOMAIN)) {
+  allowedOrigins.push(process.env.CDN_DOMAIN);
+}
+
+logger.info(`🌐 CORS enabled for origins: ${allowedOrigins.join(", ")}`);
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
+      // Allow requests with no origin (mobile apps, Postman, curl, image tags, etc.)
       if (!origin) return callback(null, true);
 
+      // Check if origin is in allowed list
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {

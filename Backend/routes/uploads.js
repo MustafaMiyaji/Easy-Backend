@@ -86,16 +86,47 @@ router.get("/:id", setCacheHeaders("images"), async (req, res) => {
     const db = mongoose.connection.db;
     const bucket = new GridFSBucket(db, { bucketName: "uploads" });
     const dl = bucket.openDownloadStream(id);
+    
     dl.on("file", (file) => {
-      if (file?.contentType) res.setHeader("Content-Type", file.contentType);
+      // Set content type
+      if (file?.contentType) {
+        res.setHeader("Content-Type", file.contentType);
+      }
+      
+      // CDN caching headers (1 year)
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      
+      // CORS headers for CDN access
       res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.setHeader("Access-Control-Max-Age", "86400");
+      
+      // Additional CDN optimization headers
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      res.setHeader("Timing-Allow-Origin", "*");
+      
+      // Cloudflare optimization hints
+      if (process.env.CDN_PROVIDER === "cloudflare") {
+        res.setHeader("CDN-Cache-Control", "max-age=31536000");
+        res.setHeader("CF-Cache-Tag", `image-${id}`);
+      }
     });
+    
     dl.on("error", () => res.status(404).json({ error: "not found" }));
     dl.pipe(res);
   } catch (e) {
     res.status(400).json({ error: "invalid id" });
   }
+});
+
+// OPTIONS /api/uploads/:id - Handle CORS preflight requests
+router.options("/:id", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+  res.setHeader("Access-Control-Max-Age", "86400");
+  res.status(204).send();
 });
 
 module.exports = router;
